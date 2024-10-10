@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preload" href="/assets/style.css" as="style" />
+
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
+    ></script>
+    <script
+      src="https://unpkg.com/htmx.org@2.0.3"
+      crossorigin="anonymous"
+    ></script>
+
+    <link rel="stylesheet" href="/assets/style.css" />
+
+    <script src="/assets/main.js"></script>
+
+    <title>Astral Bells</title>
+  </head>
+  <body hx-boost="true">
+    <!-- Navbar -->
+    <div hx-boost="true" class="h-16 border-b px-2 md:px-6 flex flex-row">
+      <nav class="flex flex-row items-center gap-x-4">
+        <a href="/" class="font-semibold text-xl">Astral Bells</a>
+      </nav>
+    </div>
+
+    <div class="mt-4 container mx-auto px-2">
+      {% block content %} {% endblock %}
+    </div>
+  </body>
+</html>
