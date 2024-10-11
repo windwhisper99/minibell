@@ -1,0 +1,132 @@
+{% extends "base.html" %} {% block content %}
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-2xl font-semibold">Create Event</h1>
+
+  <form hx-post="/events/create" hx-ext="json-enc" hx-boost="true">
+    <div class="mt-6 card space-y-4">
+      <div class="form-control">
+        <label for="title" class="form-label"> Title </label>
+        <input id="title" type="text" name="title" class="input" required />
+      </div>
+
+      <div class="form-control">
+        <label for="description" class="form-label"> Description </label>
+        <input id="description" type="text" name="description" class="input" />
+      </div>
+    </div>
+
+    <!-- Slots -->
+    <div class="mt-6 card" x-data="{slots:[],edit:null}">
+      <div class="card-header">
+        <h2 class="card-title">Slots</h2>
+      </div>
+      <template x-for="(slot,si) in slots">
+        <input
+          type="hidden"
+          data-array="true"
+          x-bind:name="`slots.${si}.jobs`"
+          x-model="slot.jobs"
+        />
+      </template>
+
+      <div class="flex flex-row gap-3 flex-wrap">
+        <template x-for="(slot,si) in slots">
+          <button
+            type="button"
+            class="h-14 w-14 rounded-sm border border-slate-300 bg-slate-300 hover:bg-slate-300/80"
+            x-bind:title="slot.jobs.map(j => j.toUpperCase()).join(', ')"
+            :class="edit === si ? 'ring-4 ring-blue-300/80' : ''"
+            @click="edit === si ? edit = null : edit = si"
+          ></button>
+        </template>
+
+        <button
+          type="button"
+          class="h-14 w-14 rounded-sm border bg-slate-50 hover:bg-slate-100 flex items-center justify-center"
+          @click="let id=slots.length;slots.push({jobs:[]});edit=id"
+          title="Add Slot"
+        >
+          <i class="i-tabler-plus?auto w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Edit slot -->
+      <div
+        class="mt-4 flex flex-row"
+        x-show="edit !== null"
+        style="display: none"
+      >
+        <div
+          class="w-5 relative before:content-empty before:absolute before:top-0 before:bottom-0 before:w-2 before:bg-slate-100"
+        ></div>
+        <div
+          class="flex-1"
+          x-data="jobSelector"
+          x-init="$watch('edit',e=>update(slots[e]?.jobs))"
+          @jobschange="edit!==null?(slots[edit].jobs=$event.detail):null"
+        >
+          {% include "components/job_selector.html" %}
+          <div class="mt-6 space-x-2">
+            <button
+              type="button"
+              class="btn btn-danger"
+              @click="slots.splice(edit,1);edit=null"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="mt-6 card">
+      <div class="card-header">
+        <h2 class="card-title">Schedule</h2>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1 form-control">
+          <label for="start_at" class="form-label"> Start At </label>
+          <input
+            id="start_at"
+            type="datetime-local"
+            name="start_at"
+            class="input"
+            required
+          />
+        </div>
+
+        <div class="flex-1 form-control">
+          <label for="deadline_at" class="form-label"> Deadline </label>
+          <input
+            id="deadline_at"
+            type="datetime-local"
+            name="deadline_at"
+            class="input"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 space-x-2">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        name="submit_type"
+        value="create"
+      >
+        Create Event
+      </button>
+      <button
+        type="submit"
+        class="btn btn-ghost"
+        name="submit_type"
+        value="save"
+      >
+        Save as Draft
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

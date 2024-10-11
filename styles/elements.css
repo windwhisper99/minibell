@@ -1,4 +1,64 @@
 .btn {
-  @apply bg-blue-500 text-white text-sm font-medium uppercase py-2 px-4 rounded-md;
-  @apply hover:bg-blue-500/90;
+  @apply inline-flex flex-row bg-slate-300 text-sm font-medium uppercase py-2 px-4 rounded-sm;
+  @apply hover:bg-slate-300/90;
+
+  &.btn-primary {
+    @apply bg-blue-400 text-white;
+    @apply hover:bg-blue-400/90;
+  }
+
+  &.btn-danger {
+    @apply bg-red-400 text-white;
+    @apply hover:bg-red-400/90;
+  }
+
+  &.btn-ghost {
+    @apply bg-transparent text-gray-700;
+    @apply hover:bg-gray-200;
+  }
+}
+
+.card {
+  @apply border rounded-md p-4 md:p-6;
+
+  .card-header {
+    @apply mb-4;
+
+    .card-title {
+      @apply text-lg font-semibold text-gray-700;
+    }
+  }
+}
+
+.form-control {
+  .form-label {
+    @apply inline-block text-xs font-medium text-gray-700 uppercase mb-2;
+  }
+}
+
+.input {
+  @apply block w-full px-3 py-2 border rounded-md text-gray-700;
+}
+
+.job-icon {
+  @apply w-14 h-14 rounded-sm flex flex-row items-center justify-center font-semibold relative;
+
+  &.tank {
+    @apply bg-blue-400 text-white hover:bg-blue-400/90;
+    &.active {
+      @apply ring-4 ring-blue-400/60;
+    }
+  }
+  &.healer {
+    @apply bg-green-400 text-white hover:bg-green-400/90;
+    &.active {
+      @apply ring-4 ring-green-300/60;
+    }
+  }
+  &.dps {
+    @apply bg-red-400 text-white hover:bg-red-400/90;
+    &.active {
+      @apply ring-4 ring-red-300/60;
+    }
+  }
 }

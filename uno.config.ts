@@ -21,6 +21,9 @@ export default defineConfig({
     presetUno(),
     presetIcons({
       cdn: "https://esm.sh/",
+      collections: {
+        ff14: {},
+      },
     }),
     presetWebFonts(),
     presetDemo(),

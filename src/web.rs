@@ -10,9 +10,11 @@ use surrealdb::{
     Surreal,
 };
 
+mod events;
+
 #[derive(Clone)]
 struct Database {
-    surrel: Surreal<Client>,
+    surreal: Surreal<Client>,
 }
 
 async fn home_page() -> impl Responder {
@@ -32,8 +34,9 @@ pub async fn run(host: String, port: u16) -> std::io::Result<()> {
         })
         .await
         .unwrap();
+    surrel.use_ns("test").use_db("test").await.unwrap();
 
-    let db = Database { surrel };
+    let db = Database { surreal: surrel };
 
     HttpServer::new(move || {
         App::new()
@@ -42,6 +45,7 @@ pub async fn run(host: String, port: u16) -> std::io::Result<()> {
             .wrap(middleware::Compress::default())
             .service(actix_files::Files::new("/assets", "assets").use_last_modified(true))
             .service(resource("/").route(get().to(home_page)))
+            .configure(events::config)
     })
     .bind((host, port))?
     .run()

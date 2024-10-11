@@ -1,5 +1,7 @@
 use clap::{Parser, Subcommand};
 
+mod migration;
+mod utils;
 mod web;
 
 #[derive(Parser)]
@@ -40,13 +42,10 @@ async fn main() -> std::io::Result<()> {
     let args = Args::parse();
 
     match args.command {
-        Some(Commands::Migrate) => {
-            println!("Running migrations");
-            return Ok(());
-        }
+        Some(Commands::Migrate) => migration::run().await,
         Some(Commands::Bot) => {
             println!("Running discord bot");
-            return Ok(());
+            Ok(())
         }
         None => web::run(args.host, args.port).await,
     }
