@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 
 mod migration;
+mod repos;
 mod utils;
 mod web;
 
@@ -39,6 +40,7 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    dotenv::dotenv().ok();
     let args = Args::parse();
 
     match args.command {

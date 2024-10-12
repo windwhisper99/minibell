@@ -10,6 +10,8 @@ askama = "0.12.1"
 askama_actix = "0.14.0"
 chrono = { version = "0.4.38", features = ["serde"] }
 clap = { version = "4.5.20", features = ["derive"] }
+dotenv = "0.15.0"
+reqwest = "0.12.8"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_with = { version = "3.11.0", features = ["chrono"] }
 sqids = "0.4.1"

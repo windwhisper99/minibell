@@ -4,18 +4,11 @@ use actix_web::{
     App, HttpServer, Responder,
 };
 use askama::Template;
-use surrealdb::{
-    engine::remote::ws::{Client, Ws},
-    opt::auth::Root,
-    Surreal,
-};
 
+use crate::utils::{db::Database, discord::DiscordClient};
+
+mod auth;
 mod events;
-
-#[derive(Clone)]
-struct Database {
-    surreal: Surreal<Client>,
-}
 
 async fn home_page() -> impl Responder {
     #[derive(Template)]
@@ -26,25 +19,18 @@ async fn home_page() -> impl Responder {
 }
 
 pub async fn run(host: String, port: u16) -> std::io::Result<()> {
-    let surrel = Surreal::new::<Ws>("127.0.0.1:8000").await.unwrap();
-    surrel
-        .signin(Root {
-            username: "root",
-            password: "root",
-        })
-        .await
-        .unwrap();
-    surrel.use_ns("test").use_db("test").await.unwrap();
-
-    let db = Database { surreal: surrel };
+    let db = Database::new().await;
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(db.clone()))
+            .app_data(Data::new(DiscordClient::new()))
+            .app_data(Data::new(reqwest::Client::new()))
             .wrap(middleware::NormalizePath::default())
             .wrap(middleware::Compress::default())
             .service(actix_files::Files::new("/assets", "assets").use_last_modified(true))
             .service(resource("/").route(get().to(home_page)))
+            .configure(auth::config)
             .configure(events::config)
     })
     .bind((host, port))?

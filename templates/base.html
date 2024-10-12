@@ -23,10 +23,21 @@
   </head>
   <body hx-boost="true">
     <!-- Navbar -->
-    <div class="h-16 border-b px-2 md:px-6 flex flex-row">
-      <nav class="flex flex-row items-center gap-x-4">
-        <a href="/" class="font-semibold text-xl">Astral Bells</a>
-      </nav>
+    <div class="h-16 border-b flex sticky top-0 bg-white">
+      <div class="container px-2 flex flex-row justify-between mx-auto">
+        <nav class="flex flex-row items-center gap-x-4">
+          <a href="/" class="font-semibold text-xl">Astral Bells</a>
+        </nav>
+
+        <a
+          hx-boots="false"
+          class="font-medium flex flex-row gap-x-2 items-center bg-transparent text-slate-8 hover:text-slate-8/80"
+          href="https://discord.com/oauth2/authorize?client_id=1286330262296461312&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fredirect&scope=identify"
+        >
+          <i class="i-mage-discord w-6 h-6 inline-block"></i>
+          Sign In
+        </a>
+      </div>
     </div>
 
     <div class="my-4 container mx-auto px-2">

@@ -7,7 +7,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
 
-use crate::{utils::header::HxLocation, web::Database};
+use crate::utils::{db::Database, header::HxLocation};
 
 mod create {
     use serde_with::{serde_as, TimestampSeconds};
@@ -40,8 +40,6 @@ mod create {
     }
 
     async fn submit(input: Json<Input>, db: Data<Database>) -> impl Responder {
-        println!("{:?}", input);
-
         let timestamp = Utc::now().timestamp_millis() as u64;
         let id = sqids::Sqids::default().encode(&[timestamp]).unwrap();
 
@@ -79,9 +77,8 @@ mod create {
                 .collect::<Vec<Vec<_>>>(),
         };
 
-        db.surreal
-            .query(
-                "CREATE ONLY event SET
+        db.query(
+            "CREATE ONLY event SET
                     id = $id,
                     title = $title,
                     description = $description,
@@ -89,12 +86,12 @@ mod create {
                     start_at = <datetime>$start_at,
                     deadline_at = $deadline_at && <datetime>$deadline_at,
                     slots = $slots.map(|$c| {jobs: $c})",
-            )
-            .bind(input)
-            .await
-            .unwrap()
-            .check()
-            .unwrap();
+        )
+        .bind(input)
+        .await
+        .unwrap()
+        .check()
+        .unwrap();
 
         HttpResponse::Created()
             .append_header(HxLocation("/"))
