@@ -1,5 +1,4 @@
 pub mod db;
-pub mod discord;
 
 pub mod header {
     use actix_web::http::header::{HeaderName, HeaderValue, InvalidHeaderValue, TryIntoHeaderPair};

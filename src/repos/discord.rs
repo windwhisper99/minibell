@@ -1,30 +1,15 @@
+use std::sync::Arc;
+
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
 
-use crate::repos::{member, RepoError};
+use crate::repos::RepoError;
 
-use super::db::Database;
+#[derive(Clone)]
+pub struct DiscordRepo {
+    reqwest: Arc<reqwest::Client>,
 
-#[derive(Debug)]
-pub enum DiscordError {
-    SendError(reqwest::Error),
-    RepoError(RepoError),
-}
-
-impl From<RepoError> for DiscordError {
-    fn from(value: RepoError) -> Self {
-        DiscordError::RepoError(value)
-    }
-}
-
-impl From<reqwest::Error> for DiscordError {
-    fn from(value: reqwest::Error) -> Self {
-        DiscordError::SendError(value)
-    }
-}
-
-pub struct DiscordClient {
     client_id: String,
     client_secret: String,
     guild_id: u64,
@@ -33,8 +18,17 @@ pub struct DiscordClient {
     redirect_uri: String,
 }
 
-impl DiscordClient {
-    pub fn new() -> Self {
+#[derive(Debug, Clone)]
+pub struct MemberInfo {
+    pub id: u64,
+    pub name: String,
+    pub avatar: String,
+    pub joined_at: DateTime<Utc>,
+    pub roles: Vec<u64>,
+}
+
+impl DiscordRepo {
+    pub fn new(reqwest: Arc<reqwest::Client>) -> Self {
         let client_id = std::env::var("DISCORD_CLIENT_ID").expect("DISCORD_CLIENT_ID must be set");
         let client_secret =
             std::env::var("DISCORD_CLIENT_SECRET").expect("DISCORD_CLIENT_SECRET must be set");
@@ -47,6 +41,8 @@ impl DiscordClient {
             std::env::var("DISCORD_REDIRECT_URI").expect("DISCORD_REDIRECT_URI must be set");
 
         Self {
+            reqwest,
+
             client_id,
             client_secret,
             guild_id,
@@ -57,17 +53,13 @@ impl DiscordClient {
     }
 
     /// Fetch access token from Oauth2 code
-    async fn fetch_user_tokens(
-        &self,
-        client: &reqwest::Client,
-        code: &str,
-    ) -> Result<String, DiscordError> {
+    pub async fn fetch_user_tokens(&self, code: &str) -> Result<String, RepoError> {
         #[derive(Debug, Deserialize)]
         struct AuthorizationResult {
             access_token: String,
         }
 
-        client
+        self.reqwest
             .post("https://discord.com/api/v10/oauth2/token")
             .form(&[
                 ("client_id", self.client_id.as_str()),
@@ -85,11 +77,7 @@ impl DiscordClient {
     }
 
     /// Fetch user id from access token
-    async fn fetch_user_id(
-        &self,
-        client: &reqwest::Client,
-        access_token: &str,
-    ) -> Result<u64, DiscordError> {
+    pub async fn fetch_user_id(&self, access_token: &str) -> Result<u64, RepoError> {
         #[serde_as]
         #[derive(Deserialize)]
         struct Payload {
@@ -97,7 +85,7 @@ impl DiscordClient {
             id: u64,
         }
 
-        client
+        self.reqwest
             .get("https://discord.com/api/v10/users/@me")
             .header("Authorization", format!("Bearer {}", access_token))
             .send()
@@ -110,12 +98,7 @@ impl DiscordClient {
 
     /// Fetch member info by user id
     /// Update and store member information
-    async fn fetch_member_info(
-        &self,
-        user_id: u64,
-        client: &reqwest::Client,
-        db: &Database,
-    ) -> Result<member::Member, DiscordError> {
+    pub async fn fetch_member_info(&self, user_id: u64) -> Result<MemberInfo, RepoError> {
         #[serde_as]
         #[derive(Debug, Deserialize)]
         struct UserPayload {
@@ -136,7 +119,8 @@ impl DiscordClient {
             joined_at: DateTime<Utc>,
         }
 
-        let payload = client
+        let payload = self
+            .reqwest
             .get(format!(
                 "https://discord.com/api/v10/guilds/{}/members/{}",
                 self.guild_id, user_id
@@ -147,46 +131,36 @@ impl DiscordClient {
             .json::<MemberPayload>()
             .await?;
 
-        member::insert_member(
-            db,
-            member::InsertMemberInput {
-                id: payload.user.id,
-                global_name: payload.user.global_name,
-                guild_name: payload.nick,
-                global_avatar: payload.user.avatar,
-                guild_avatar: payload.avatar,
-                joined_at: payload.joined_at,
-                roles: payload.roles,
-            },
-        )
-        .await
-        .map_err(Into::into)
+        Ok(MemberInfo {
+            id: payload.user.id,
+            name: payload.nick.unwrap_or(payload.user.global_name),
+            avatar: self.avatar_url(payload.user.id, &payload.avatar, &payload.user.avatar),
+            joined_at: payload.joined_at,
+            roles: payload.roles,
+        })
     }
 
-    pub async fn auth(
+    pub async fn auth(&self, code: &str) -> Result<MemberInfo, RepoError> {
+        let access_token = self.fetch_user_tokens(code).await?;
+        let user_id = self.fetch_user_id(&access_token).await?;
+        self.fetch_member_info(user_id).await
+    }
+
+    fn avatar_url(
         &self,
-        code: &str,
-        client: &reqwest::Client,
-        db: &Database,
-    ) -> Result<member::Member, DiscordError> {
-        let access_token = self.fetch_user_tokens(client, code).await?;
-        let user_id = self.fetch_user_id(client, &access_token).await?;
-        self.fetch_member_info(user_id, client, db).await
-    }
-
-    pub fn avatar_url(&self, member: &member::Member) -> String {
-        if let Some(avatar) = &member.guild_avatar {
+        id: u64,
+        guild_avatar: &Option<String>,
+        global_avatar: &Option<String>,
+    ) -> String {
+        if let Some(avatar) = &guild_avatar {
             format!(
                 "https://cdn.discordapp.com/guilds/{}/users/{}/avatars/{}.png",
-                self.guild_id, member.id, avatar
+                self.guild_id, id, avatar
             )
-        } else if let Some(avatar) = &member.global_avatar {
-            format!(
-                "https://cdn.discordapp.com/avatars/{}/{}.png",
-                member.id, avatar
-            )
+        } else if let Some(avatar) = &global_avatar {
+            format!("https://cdn.discordapp.com/avatars/{}/{}.png", id, avatar)
         } else {
-            let index = (member.id >> 22) % 6;
+            let index = (id >> 22) % 6;
             format!("https://cdn.discordapp.com/embed/avatars/{}.png", index)
         }
     }

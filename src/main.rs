@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 mod migration;
 mod repos;
+mod services;
 mod utils;
 mod web;
 

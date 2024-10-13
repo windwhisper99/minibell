@@ -10,6 +10,8 @@ use surrealdb::RecordId;
 use crate::utils::{db::Database, header::HxLocation};
 
 mod create {
+    use std::sync::Arc;
+
     use serde_with::{serde_as, TimestampSeconds};
 
     use super::*;
@@ -39,7 +41,7 @@ mod create {
         jobs: Vec<String>,
     }
 
-    async fn submit(input: Json<Input>, db: Data<Database>) -> impl Responder {
+    async fn submit(input: Json<Input>, db: Data<Arc<Database>>) -> impl Responder {
         let timestamp = Utc::now().timestamp_millis() as u64;
         let id = sqids::Sqids::default().encode(&[timestamp]).unwrap();
 

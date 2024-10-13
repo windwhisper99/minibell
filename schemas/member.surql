@@ -1,10 +1,8 @@
 -- Member
 DEFINE TABLE OVERWRITE member SCHEMAFULL;
 
-DEFINE FIELD OVERWRITE global_name ON member TYPE string;
-DEFINE FIELD OVERWRITE guild_name ON member TYPE option<string>;
-DEFINE FIELD OVERWRITE global_avatar ON member TYPE option<string>;
-DEFINE FIELD OVERWRITE guild_avatar ON member TYPE option<string>;
+DEFINE FIELD OVERWRITE name ON member TYPE string;
+DEFINE FIELD OVERWRITE avatar ON member TYPE string;
 -- First time active with MiniBell timestamp
 DEFINE FIELD OVERWRITE actived_at ON member TYPE datetime VALUE time::now() READONLY;
 -- Joined in Discord guid timestamp
