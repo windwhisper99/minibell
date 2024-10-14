@@ -14,6 +14,12 @@ mod create {
 
     use serde_with::{serde_as, TimestampSeconds};
 
+    use crate::{
+        domain::{auth::AccessType, Error},
+        infra::DiscordReq,
+        web::utils::{authorizated_check, templates},
+    };
+
     use super::*;
 
     #[derive(Debug, Deserialize)]
@@ -41,7 +47,13 @@ mod create {
         jobs: Vec<String>,
     }
 
-    async fn submit(input: Json<Input>, db: Data<Arc<Database>>) -> impl Responder {
+    async fn submit(
+        access_type: AccessType,
+        input: Json<Input>,
+        db: Data<Arc<Database>>,
+    ) -> Result<impl Responder, Error> {
+        authorizated_check(&access_type)?;
+
         let timestamp = Utc::now().timestamp_millis() as u64;
         let id = sqids::Sqids::default().encode(&[timestamp]).unwrap();
 
@@ -95,17 +107,26 @@ mod create {
         .check()
         .unwrap();
 
-        HttpResponse::Created()
+        Ok(HttpResponse::Created()
             .append_header(HxLocation("/"))
-            .finish()
+            .finish())
     }
 
-    async fn page() -> impl Responder {
-        #[derive(Template)]
-        #[template(path = "create_event.html")]
-        struct CreateEventPage;
+    async fn page(
+        access_type: AccessType,
+        discord_req: Data<DiscordReq>,
+    ) -> Result<impl Responder, Error> {
+        authorizated_check(&access_type)?;
 
-        CreateEventPage
+        #[derive(Template)]
+        #[template(path = "create_event.html", escape = "none")]
+        struct CreateEventPage {
+            user_status: templates::UserStatusTempl,
+        }
+
+        Ok(CreateEventPage {
+            user_status: templates::UserStatusTempl::new(&access_type, &discord_req),
+        })
     }
 
     pub fn config(cfg: &mut ServiceConfig) {

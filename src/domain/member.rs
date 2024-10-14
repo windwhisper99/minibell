@@ -5,7 +5,7 @@ use super::Error;
 pub type MemberId = u64;
 pub type RoleId = u64;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Member {
     pub id: MemberId,
     pub display_name: String,
@@ -17,7 +17,7 @@ pub struct Member {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MemberInsertInput {
     pub id: u64,
     pub display_name: String,
@@ -48,4 +48,7 @@ pub trait DiscordService {
         &self,
         discord_member: &Self::DiscordMember,
     ) -> Result<MemberInsertInput, Error>;
+
+    /// Get discord Oauth2 URL
+    fn get_oauth2_url(&self) -> String;
 }

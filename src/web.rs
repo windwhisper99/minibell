@@ -1,55 +1,35 @@
-use std::{future::Future, pin::Pin, sync::Arc};
+use std::sync::Arc;
 
 use actix_web::{
     middleware,
     web::{get, resource, Data},
-    App, FromRequest, HttpServer, Responder,
+    App, HttpServer, Responder,
 };
 use askama::Template;
+use utils::templates;
 
-use crate::{domain::auth::AccessType, infra, usecase};
+use crate::{
+    domain::{auth::AccessType, Error},
+    infra::{self, DiscordReq},
+};
 
 mod auth;
 mod events;
+mod utils;
 
-impl FromRequest for AccessType {
-    type Error = actix_web::Error;
-    type Future = Pin<Box<dyn Future<Output = Result<Self, Self::Error>>>>;
-
-    fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
-        let token = req.cookie("token").map(|cookie| cookie.value().to_string());
-        let session_hmac = req
-            .app_data::<Data<infra::SessionHmac>>()
-            .expect("SessionHmac not found")
-            .clone();
-        let session_repo = req
-            .app_data::<Data<infra::SessionRepo>>()
-            .expect("SessionRepo not found")
-            .clone();
-
-        Box::pin(async move {
-            match token {
-                Some(token) => usecase::verify_auth::VerifyUC::new(
-                    session_repo.as_ref(),
-                    session_hmac.as_ref(),
-                )
-                .execute(&token)
-                .await
-                .map_err(|_| actix_web::error::ErrorInternalServerError("Verify error")),
-                _ => Ok(AccessType::Unauthenticated),
-            }
-        })
-    }
-}
-
-async fn home_page(auth: AccessType) -> impl Responder {
-    println!("{:?}", auth);
-
+async fn home_page(
+    access_type: AccessType,
+    discord_req: Data<DiscordReq>,
+) -> Result<impl Responder, Error> {
     #[derive(Template)]
-    #[template(path = "home.html")]
-    struct HomePage;
+    #[template(path = "home.html", escape = "none")]
+    struct HomePage {
+        user_status: templates::UserStatusTempl,
+    }
 
-    HomePage
+    Ok(HomePage {
+        user_status: templates::UserStatusTempl::new(&access_type, &discord_req),
+    })
 }
 
 pub async fn run(host: String, port: u16) -> std::io::Result<()> {
@@ -74,7 +54,7 @@ pub async fn run(host: String, port: u16) -> std::io::Result<()> {
             .service(actix_files::Files::new("/assets", "assets").use_last_modified(true))
             .service(resource("/").route(get().to(home_page)))
             .configure(auth::config)
-        // .configure(events::config)
+            .configure(events::config)
     })
     .bind((host, port))?
     .run()

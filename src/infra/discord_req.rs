@@ -180,4 +180,11 @@ impl member::DiscordService for &DiscordReq {
             roles: discord_member.roles.clone(),
         })
     }
+
+    fn get_oauth2_url(&self) -> String {
+        format!(
+            "https://discord.com/api/oauth2/authorize?client_id={}&redirect_uri={}&response_type=code&scope=identify",
+            self.client_id, url_escape::encode_www_form_urlencoded(&self.redirect_uri)
+        )
+    }
 }

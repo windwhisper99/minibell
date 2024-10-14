@@ -35,7 +35,7 @@ impl AccessType {
 }
 
 /// Sign in session
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Session {
     pub id: String,
     pub member_id: u64,
@@ -45,12 +45,13 @@ pub struct Session {
 }
 
 /// Session with member
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SessionWithMember {
     pub session: Session,
     pub member: Member,
 }
 
+#[derive(Debug, Clone)]
 pub struct SessionCreateInput {
     pub member_id: MemberId,
     pub issued_at: DateTime<Utc>,

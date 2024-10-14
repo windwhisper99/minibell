@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Astral Bells" />
 
     <link rel="preload" href="/assets/style.css" as="style" />
 
@@ -29,14 +30,7 @@
           <a href="/" class="font-semibold text-xl">Astral Bells</a>
         </nav>
 
-        <a
-          hx-boots="false"
-          class="font-medium flex flex-row gap-x-2 items-center bg-transparent text-slate-8 hover:text-slate-8/80"
-          href="https://discord.com/oauth2/authorize?client_id=1286330262296461312&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fredirect&scope=identify"
-        >
-          <i class="i-mage-discord w-6 h-6 inline-block"></i>
-          Sign In
-        </a>
+        {{ user_status }}
       </div>
     </div>
 
