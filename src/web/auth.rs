@@ -1,29 +1,43 @@
 use actix_web::{
-    cookie::{Cookie, SameSite},
+    cookie::Cookie,
     web::{get, scope, Data, Query, Redirect, ServiceConfig},
     Responder,
 };
 use serde::Deserialize;
 
-use crate::services::auth::AuthService;
+use crate::{infra, usecase::sign_in::SignInUC};
 
 #[derive(Deserialize)]
 struct RedirectQuery {
     code: String,
 }
 
-async fn redirect(query: Query<RedirectQuery>, auth_service: Data<AuthService>) -> impl Responder {
-    let session = match auth_service.auth(&query.code).await {
-        Ok(session) => session,
+async fn redirect(
+    query: Query<RedirectQuery>,
+    member_repo: Data<infra::MemberRepo>,
+    session_repo: Data<infra::SessionRepo>,
+    session_hmac: Data<infra::SessionHmac>,
+    discord_req: Data<infra::DiscordReq>,
+) -> impl Responder {
+    let token = match SignInUC::new(
+        member_repo.as_ref(),
+        session_repo.as_ref(),
+        session_hmac.as_ref(),
+        discord_req.as_ref(),
+    )
+    .execute(&query.code)
+    .await
+    {
+        Ok(token) => token,
         Err(err) => {
             println!("{:?}", err);
             return Redirect::to("/").temporary().customize();
         }
     };
-    let cookie = Cookie::build("token", session)
-        .same_site(SameSite::Strict)
+
+    let cookie = Cookie::build("token", token)
+        // .same_site(SameSite::Strict)
         .http_only(true)
-        .secure(true)
         .path("/")
         .finish();
 
