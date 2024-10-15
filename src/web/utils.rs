@@ -2,7 +2,10 @@ use std::{future::Future, pin::Pin};
 
 use actix_web::{
     body::BoxBody,
-    http::{header::ContentType, StatusCode},
+    http::{
+        header::{ContentType, HeaderName, HeaderValue, InvalidHeaderValue, TryIntoHeaderPair},
+        StatusCode,
+    },
     web::Data,
     FromRequest, HttpResponse,
 };
@@ -13,6 +16,19 @@ use crate::{
     infra,
     usecase::verify_auth::VerifyAuthUC,
 };
+
+pub struct HxLocation(pub &'static str);
+
+impl TryIntoHeaderPair for HxLocation {
+    type Error = InvalidHeaderValue;
+
+    fn try_into_pair(self) -> Result<(HeaderName, HeaderValue), Self::Error> {
+        Ok((
+            HeaderName::from_static("hx-location"),
+            HeaderValue::from_str(&self.0)?,
+        ))
+    }
+}
 
 /// Extractor for AccessType
 impl FromRequest for AccessType {

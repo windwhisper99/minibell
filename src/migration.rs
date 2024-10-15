@@ -1,6 +1,6 @@
 use surrealdb_migrations::MigrationRunner;
 
-use crate::utils::db::Database;
+use crate::infra::Database;
 
 pub async fn run() -> std::io::Result<()> {
     let db = Database::new().await;

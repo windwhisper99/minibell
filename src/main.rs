@@ -3,10 +3,7 @@ use clap::{Parser, Subcommand};
 mod domain;
 mod infra;
 mod migration;
-mod repos;
-mod services;
 mod usecase;
-mod utils;
 mod web;
 
 #[derive(Parser)]
