@@ -13,6 +13,22 @@ document.addEventListener("alpine:init", () => {
     return Object.keys(selected).filter((key) => selected[key]);
   }
 
+  Alpine.data("switcher", (checked = false) => ({
+    checked,
+
+    toggle() {
+      this.checked = !this.checked;
+    },
+    root: {
+      [":class"]() {
+        return this.checked ? "active" : "";
+      },
+      ["@click"]() {
+        this.toggle();
+      },
+    },
+  }));
+
   Alpine.data("jobSelector", (initJobs) => ({
     selected: {},
     update(jobs) {

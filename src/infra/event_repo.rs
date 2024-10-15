@@ -44,18 +44,18 @@ impl Into<event::EventStatus> for EventStatusModel {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct EventSlotModel {
-    jobs: Vec<RecordId>,
+    jobs: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct EventModel {
-    id: RecordId,
+    id: String,
     title: String,
     description: Option<String>,
 
     status: EventStatusModel,
 
-    host: RecordId,
+    host: Option<u64>,
 
     slots: Vec<EventSlotModel>,
 
@@ -71,7 +71,7 @@ struct EventModel {
 impl From<&event::Event> for EventModel {
     fn from(value: &event::Event) -> Self {
         Self {
-            id: RecordId::from_table_key("event", &value.id),
+            id: value.id.to_string(),
             title: value.info.title.clone(),
             description: value.info.description.clone(),
 
@@ -81,11 +81,7 @@ impl From<&event::Event> for EventModel {
                 .slots
                 .iter()
                 .map(|s| EventSlotModel {
-                    jobs: s
-                        .jobs
-                        .iter()
-                        .map(|j| RecordId::from_table_key("job", j))
-                        .collect::<Vec<_>>(),
+                    jobs: s.jobs.iter().map(|j| j.to_string()).collect::<Vec<_>>(),
                 })
                 .collect(),
 
@@ -93,16 +89,46 @@ impl From<&event::Event> for EventModel {
             deadline_at: value.schedule.deadline_at,
             duration: value.schedule.duration.num_minutes(),
 
-            host: match &value.host {
-                event::EventHost::Member(member) => {
-                    RecordId::from_table_key("member", *member as i64)
-                }
-                event::EventHost::System => RecordId::from_table_key("member", "system"),
+            host: match value.host {
+                event::EventHost::Member(id) => Some(id),
+                event::EventHost::System => None,
             },
 
             created_at: value.created_at,
             updated_at: value.updated_at,
             published_at: value.published_at,
+        }
+    }
+}
+
+impl Into<event::Event> for EventModel {
+    fn into(self) -> event::Event {
+        event::Event {
+            id: self.id.clone(),
+            info: event::EventInfo {
+                title: self.title,
+                description: self.description,
+            },
+            status: self.status.into(),
+            host: match self.host {
+                Some(key) => event::EventHost::Member(key),
+                None => event::EventHost::System,
+            },
+            slots: self
+                .slots
+                .iter()
+                .map(|s| event::EventSlot {
+                    jobs: s.jobs.iter().map(|j| j.to_string()).collect::<Vec<_>>(),
+                })
+                .collect(),
+            schedule: event::EventSchedule {
+                start_at: self.start_at,
+                deadline_at: self.deadline_at,
+                duration: chrono::Duration::minutes(self.duration),
+            },
+            created_at: self.created_at,
+            updated_at: self.updated_at,
+            published_at: self.published_at,
         }
     }
 }
@@ -203,41 +229,63 @@ impl EventRepo {
     }
 }
 
+static EVENT_FIELDS: &str = r#"
+    *,
+    id.id(),
+    (host && host.id()) as host,
+    slots.{jobs:jobs.map(|$j|$j.id())}"#;
+
 impl event::EventRepo for &EventRepo {
-    async fn create(
+    async fn insert(
         &self,
         event: &event::Event,
         log: &Option<event::EventLog>,
     ) -> Result<(), Error> {
         let query = self.db.query("BEGIN TRANSACTION").query(
-            "CREATE ONLY event SET
-                    id = $id,
+            "INSERT INTO event {
+                id: $id,
+                title: $title,
+                description: $description,
 
-                    title = $title,
-                    description = $description,
-                    status = $status,
-                    
-                    host = $host,
+                status: $status,
 
-                    slots = $slots,
+                host: $host && type::thing('member',$host),
 
-                    start_at = <datetime>$start_at,
-                    deadline_at = $deadline_at && <datetime>$deadline_at,
-                    duration = $duration,
-                    
-                    created_at = <datetime>$created_at,
-                    updated_at = <datetime>$updated_at,
-                    published_at = $published_at && <datetime>$published_at",
+                slots: $slots.map(|$s| {
+                    jobs: $s.jobs.map(|$j| type::thing('job',$j))
+                }),
+
+                start_at: <datetime>$start_at,
+                deadline_at: $deadline_at && <datetime>$deadline_at,
+                duration: $duration,
+
+                created_at: <datetime>$created_at,
+                updated_at: <datetime>$updated_at,
+                published_at: $published_at && <datetime>$published_at
+            }
+            ON DUPLICATE KEY UPDATE
+                title = $input.title,
+                description = $input.description,
+                status = $input.status,
+
+                slots = $input.slots,
+
+                start_at = $input.start_at,
+                deadline_at = $input.deadline_at,
+                duration = $input.duration,
+
+                updated_at = $input.updated_at,
+                published_at = $input.published_at",
         );
 
         let query = if let Some(log) = log {
             query
                 .query(
                     "CREATE ONLY event_log SET
-                    event = $id,
-                    type = $log.kind.type,
-                    content = $log.kind.content,
-                    at = <datetime>$log.at",
+                        event = type::thing('event',$id),
+                        type = $log.kind.type,
+                        content = $log.kind.content,
+                        at = <datetime>$log.at",
                 )
                 .bind(("log", EventLogModel::from(log)))
         } else {
@@ -253,15 +301,16 @@ impl event::EventRepo for &EventRepo {
         Ok(())
     }
 
-    async fn update(
-        &self,
-        event: &event::Event,
-        log: &Option<event::EventLog>,
-    ) -> Result<(), Error> {
-        unimplemented!()
-    }
-
     async fn get_by_id(&self, id: &str) -> Result<event::Event, Error> {
-        unimplemented!()
+        self.db
+            .query(format!(
+                "SELECT {} FROM ONLY event WHERE id = $id LIMIT 1",
+                EVENT_FIELDS
+            ))
+            .bind(("id", RecordId::from_table_key("event", id)))
+            .await?
+            .take::<Option<EventModel>>(0)?
+            .ok_or_else(|| Error::NotFound)
+            .map(Into::into)
     }
 }

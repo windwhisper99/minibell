@@ -47,16 +47,20 @@ function setValue(obj, path, value) {
  * @param {HTMLElement} ele
  */
 function getValue(ele) {
-  if (ele.value === "") return null;
   if (ele.type === "datetime-local") {
     return new Date(ele.value).getTime() / 1000;
+  }
+  if (ele.type === "checkbox") {
+    return ele.checked;
   }
 
   // If input have [data-array] attribute, split value by comma
   if (ele.dataset.array) {
+    if (ele.value === "") return [];
     return ele.value.split(",").map((v) => v.trim());
   }
 
+  if (ele.value === "") return null;
   return ele.value;
 }
 

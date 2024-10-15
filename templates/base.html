@@ -24,13 +24,13 @@
   </head>
   <body hx-boost="true">
     <!-- Navbar -->
-    <div class="h-16 border-b flex sticky top-0 bg-white">
+    <div class="h-16 border-b flex sticky top-0 bg-white z-100">
       <div class="container px-2 flex flex-row justify-between mx-auto">
         <nav class="flex flex-row items-center gap-x-4">
           <a href="/" class="font-semibold text-xl">Astral Bells</a>
         </nav>
 
-        {{ user_status }}
+        {{ user_status|safe }}
       </div>
     </div>
 

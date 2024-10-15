@@ -1,22 +1,43 @@
 {% extends "base.html" %} {% block content %}
 <div class="max-w-4xl mx-auto">
+  {% match editing_event %} {% when Some with (val) %}
+  <h1 class="text-2xl font-semibold">Edit Event: {{val}}</h1>
+  {% when None %}
   <h1 class="text-2xl font-semibold">Create Event</h1>
+  {% endmatch %}
 
   <form hx-post="/events/create" hx-ext="json-enc" hx-boost="true">
+    {% match editing_event %} {% when Some with (val) %}
+    <input type="hidden" name="editing_event" value="{{val}}" />
+    {% when None %} {% endmatch %}
+
     <div class="mt-6 card space-y-4">
       <div class="form-control">
         <label for="title" class="form-label"> Title </label>
-        <input id="title" type="text" name="title" class="input" required />
+        <input
+          id="title"
+          type="text"
+          name="title"
+          class="input"
+          required
+          value="{{title}}"
+        />
       </div>
 
       <div class="form-control">
         <label for="description" class="form-label"> Description </label>
-        <input id="description" type="text" name="description" class="input" />
+        <input
+          id="description"
+          type="text"
+          name="description"
+          class="input"
+          value="{{description}}"
+        />
       </div>
     </div>
 
     <!-- Slots -->
-    <div class="mt-6 card" x-data="{slots:[],edit:null}">
+    <div class="mt-6 card" x-data="{slots:{{slots}},edit:null}">
       <div class="card-header">
         <h2 class="card-title">Slots</h2>
       </div>
@@ -88,44 +109,66 @@
       <div class="flex flex-col md:flex-row gap-4">
         <div class="flex-1 form-control">
           <label for="start_at" class="form-label"> Start At </label>
-          <input
-            id="start_at"
-            type="datetime-local"
-            name="start_at"
-            class="input"
-            required
-          />
+          <input id="start_at" type="datetime-local" name="start_at"
+          class="input" required value="{{start_at|e("html")}}" />
         </div>
 
         <div class="flex-1 form-control">
           <label for="deadline_at" class="form-label"> Deadline </label>
-          <input
-            id="deadline_at"
-            type="datetime-local"
-            name="deadline_at"
-            class="input"
-          />
+          <input id="deadline_at" type="datetime-local" name="deadline_at"
+          class="input" value="{{deadline_at|e("html")}}" />
         </div>
       </div>
     </div>
 
-    <div class="mt-6 space-x-2">
-      <button
-        type="submit"
-        class="btn btn-primary"
-        name="submit"
-        value="publish"
-      >
-        Publish Event
-      </button>
-      <button
-        type="submit_type"
-        class="btn btn-ghost"
-        name="submit"
-        value="save"
-      >
-        Save as Draft
-      </button>
+    <!-- Publishing -->
+    <div class="mt-6 card">
+      <div class="card-header">
+        <h2 class="card-title">Publishing</h2>
+      </div>
+
+      <div class="border rounded-md p-4">
+        <div x-data="switcher" class="switcher" x-bind="root">
+          <input
+            id="is_private"
+            type="checkbox"
+            name="is_private"
+            class="hidden"
+            placeholder="Publish event as private"
+            :checked="checked"
+          />
+
+          <div class="switcher-btn">
+            <span class="switcher-dot"></span>
+          </div>
+
+          <div class="ml-4 select-none">
+            <p class="font-medium">Publish event as private</p>
+            <p class="mt-1 text-sm">
+              Private events are only visible to the invited participants.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 space-x-2">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          name="submit"
+          value="publish"
+        >
+          Publish Event
+        </button>
+        <button
+          type="submit_type"
+          class="btn btn-ghost"
+          name="submit"
+          value="save"
+        >
+          Save as Draft
+        </button>
+      </div>
     </div>
   </form>
 </div>

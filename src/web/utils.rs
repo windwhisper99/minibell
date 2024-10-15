@@ -17,15 +17,15 @@ use crate::{
     usecase::verify_auth::VerifyAuthUC,
 };
 
-pub struct HxLocation(pub &'static str);
+pub struct HxLocation<S: ToString>(pub S);
 
-impl TryIntoHeaderPair for HxLocation {
+impl<S: ToString> TryIntoHeaderPair for HxLocation<S> {
     type Error = InvalidHeaderValue;
 
     fn try_into_pair(self) -> Result<(HeaderName, HeaderValue), Self::Error> {
         Ok((
             HeaderName::from_static("hx-location"),
-            HeaderValue::from_str(&self.0)?,
+            HeaderValue::from_str(&self.0.to_string())?,
         ))
     }
 }
@@ -146,5 +146,9 @@ pub mod templates {
                 auth_url: discord_req.get_oauth2_url(),
             }
         }
+    }
+
+    pub fn datetime_to_string(datetime: chrono::DateTime<chrono::Utc>) -> String {
+        datetime.format("%Y-%m-%dT%H:%M").to_string()
     }
 }

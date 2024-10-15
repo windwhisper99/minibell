@@ -230,6 +230,28 @@ impl Event {
         })
     }
 
+    fn is_writeable(&self, access_type: &AccessType) -> bool {
+        match self.host {
+            EventHost::Member(host_id) => match access_type {
+                AccessType::System => true,
+                AccessType::Session(session_with_member) => {
+                    host_id == session_with_member.member.id
+                }
+                _ => false,
+            },
+            EventHost::System => match access_type {
+                AccessType::System => true,
+                _ => false,
+            },
+        }
+    }
+
+    /// Check if the event is updateable by the access type
+    pub fn is_updateable(&self, access_type: &AccessType) -> bool {
+        // Can only update draft event
+        self.status.is_draft() && self.is_writeable(access_type)
+    }
+
     /// Update event with log
     /// Update the updated_at field
     fn update_with_log(&mut self, kind: EventLogKind) -> EventLog {
@@ -416,10 +438,7 @@ impl Event {
 
 pub trait EventRepo {
     /// Insert or update event
-    async fn create(&self, event: &Event, log: &Option<EventLog>) -> Result<(), Error>;
-
-    /// Update event and insert log
-    async fn update(&self, event: &Event, log: &Option<EventLog>) -> Result<(), Error>;
+    async fn insert(&self, event: &Event, log: &Option<EventLog>) -> Result<(), Error>;
 
     /// Get event by id
     async fn get_by_id(&self, id: &str) -> Result<Event, Error>;

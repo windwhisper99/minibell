@@ -8,7 +8,7 @@ DEFINE FIELD OVERWRITE description ON event TYPE option<string>;
 DEFINE FIELD OVERWRITE status ON event TYPE string;
 
 -- Access
-DEFINE FIELD OVERWRITE host ON event TYPE record<member>;
+DEFINE FIELD OVERWRITE host ON event TYPE option<record<member>>;
 
 -- Slots
 DEFINE FIELD OVERWRITE slots ON event TYPE array<object>;
@@ -32,8 +32,8 @@ DEFINE FIELD OVERWRITE published_at ON event TYPE option<datetime>;
 DEFINE TABLE OVERWRITE event_log SCHEMAFULL;
 
 DEFINE FIELD OVERWRITE event ON event_log TYPE record<event>;
-DEFINE FIELD OVERWRITE type AS string;
-DEFINE FIELD OVERWRITE content AS option<object>;
+DEFINE FIELD OVERWRITE type ON event_log TYPE string;
+DEFINE FIELD OVERWRITE content ON event_log TYPE option<object>;
 
 -- Timestamp
 DEFINE FIELD OVERWRITE at ON event_log TYPE datetime VALUE time::now() READONLY;

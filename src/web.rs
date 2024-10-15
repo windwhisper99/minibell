@@ -22,7 +22,7 @@ async fn home_page(
     discord_req: Data<DiscordReq>,
 ) -> Result<impl Responder, Error> {
     #[derive(Template)]
-    #[template(path = "home.html", escape = "none")]
+    #[template(path = "home.html")]
     struct HomePage {
         user_status: templates::UserStatusTempl,
     }

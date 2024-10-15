@@ -18,6 +18,30 @@
   }
 }
 
+.switcher {
+  @apply cursor-pointer inline-flex items-center;
+
+  .switcher-btn {
+    @apply relative inline-flex h-6 py-0.5 rounded-full w-10 bg-slate-200;
+    .switcher-dot {
+      @apply w-5 h-5 duration-200 ease-in-out bg-white rounded-full shadow-md translate-x-0.5;
+    }
+  }
+
+  .switcher-label {
+    @apply select-none ml-2 cursor-pointer text-sm;
+  }
+
+  &.active {
+    .switcher-btn {
+      @apply bg-blue-600;
+      .switcher-dot {
+        @apply translate-x-[18px];
+      }
+    }
+  }
+}
+
 .card {
   @apply border rounded-md p-4 md:p-6;
 

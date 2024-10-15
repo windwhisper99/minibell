@@ -2508,6 +2508,7 @@ dependencies = [
  "hmac",
  "reqwest",
  "serde",
+ "serde_json",
  "serde_with",
  "sha2",
  "sqids",
