@@ -36,7 +36,7 @@ struct Args {
 #[derive(Subcommand)]
 enum Commands {
     /// Run migrations
-    Migrate,
+    Migration,
 
     /// Run the discord bot only
     Bot,
@@ -44,11 +44,13 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    #[cfg(debug_assertions)]
     dotenv::dotenv().ok();
+
     let args = Args::parse();
 
     match args.command {
-        Some(Commands::Migrate) => migration::run().await,
+        Some(Commands::Migration) => migration::run().await,
         Some(Commands::Bot) => {
             println!("Running discord bot");
             Ok(())

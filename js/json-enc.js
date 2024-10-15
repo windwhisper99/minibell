@@ -5,9 +5,9 @@ htmx.defineExtension("json-enc", {
     }
   },
 
-  encodeParameters: function (xhr, parameters, elt) {
+  encodeParameters: function (xhr, formData, elt) {
     xhr.overrideMimeType("text/json");
-    return JSON.stringify(transform(elt));
+    return JSON.stringify(transform(elt, formData));
   },
 });
 
@@ -64,15 +64,16 @@ function getValue(ele) {
  * @param {HTMLFormElement} form
  * @returns
  */
-function transform(form) {
+function transform(form, formData) {
   // Map of form elements
   const elements = form.elements;
   const elementMap = {};
   for (let i = 0; i < elements.length; i++) {
     const element = elements[i];
     const name = element.name;
+    const type = element.type;
 
-    if (element.name) {
+    if (name && type !== "submit") {
       elementMap[name] = element;
     }
   }
@@ -87,6 +88,10 @@ function transform(form) {
       setValue(jsonObj, path, value);
     }
   }
+
+  setValue(jsonObj, ["submit"], formData.get("submit"));
+
+  console.log(jsonObj);
 
   return jsonObj;
 }

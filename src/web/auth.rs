@@ -5,7 +5,7 @@ use actix_web::{
 };
 use serde::Deserialize;
 
-use crate::{infra, usecase::sign_in::SignInUC};
+use crate::{infra, usecase::sign_in};
 
 #[derive(Deserialize)]
 struct RedirectQuery {
@@ -19,7 +19,7 @@ async fn redirect(
     session_hmac: Data<infra::SessionHmac>,
     discord_req: Data<infra::DiscordReq>,
 ) -> impl Responder {
-    let token = match SignInUC::new(
+    let token = match sign_in::SignInUC::new(
         member_repo.as_ref(),
         session_repo.as_ref(),
         session_hmac.as_ref(),

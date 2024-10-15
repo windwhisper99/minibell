@@ -11,7 +11,7 @@ use askama::Template;
 use crate::{
     domain::{auth::AccessType, Error},
     infra,
-    usecase::verify_auth::VerifyUC,
+    usecase::verify_auth::VerifyAuthUC,
 };
 
 /// Extractor for AccessType
@@ -32,7 +32,7 @@ impl FromRequest for AccessType {
 
         Box::pin(async move {
             match token {
-                Some(token) => VerifyUC::new(session_repo.as_ref(), session_hmac.as_ref())
+                Some(token) => VerifyAuthUC::new(session_repo.as_ref(), session_hmac.as_ref())
                     .execute(&token)
                     .await
                     .map_err(|_| actix_web::error::ErrorInternalServerError("Verify error")),
@@ -44,22 +44,39 @@ impl FromRequest for AccessType {
 
 impl actix_web::ResponseError for Error {
     fn error_response(&self) -> HttpResponse<BoxBody> {
+        println!("{:?}", self);
+
         #[derive(Template)]
         #[template(path = "unauthorized.html")]
         struct UnauthorizedTempl {}
 
-        HttpResponse::build(self.status_code())
-            .content_type(ContentType::html())
-            .body(
-                UnauthorizedTempl {}
-                    .render()
-                    .expect("Failed to render unauthorized.html"),
-            )
+        match self {
+            Error::Unauthenticated => HttpResponse::build(self.status_code())
+                .content_type(ContentType::html())
+                .body(
+                    UnauthorizedTempl {}
+                        .render()
+                        .unwrap_or("Internal Server Error".to_string()),
+                ),
+            _ => HttpResponse::build(self.status_code())
+                .content_type(ContentType::html())
+                .body(
+                    UnauthorizedTempl {}
+                        .render()
+                        .unwrap_or("Internal Server Error".to_string()),
+                ),
+        }
     }
 
     fn status_code(&self) -> StatusCode {
         match self {
             Error::Unauthenticated => StatusCode::UNAUTHORIZED,
+
+            Error::BadRequest(_) => StatusCode::BAD_REQUEST,
+            Error::Forbidden => StatusCode::FORBIDDEN,
+
+            Error::NotFound => StatusCode::NOT_FOUND,
+
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

@@ -33,7 +33,6 @@ async fn home_page(
 }
 
 pub async fn run(host: String, port: u16) -> std::io::Result<()> {
-    // let db = Arc::new(Database::new().await);
     let db = Arc::new(infra::Database::new().await);
     let reqwest = Arc::new(reqwest::Client::new());
 
@@ -42,6 +41,7 @@ pub async fn run(host: String, port: u16) -> std::io::Result<()> {
 
     let member_repo = infra::MemberRepo::new(db.clone());
     let session_repo = infra::SessionRepo::new(db.clone());
+    let event_repo = infra::EventRepo::new(db.clone());
 
     HttpServer::new(move || {
         App::new()
@@ -49,6 +49,7 @@ pub async fn run(host: String, port: u16) -> std::io::Result<()> {
             .app_data(Data::new(session_hmac.clone()))
             .app_data(Data::new(member_repo.clone()))
             .app_data(Data::new(session_repo.clone()))
+            .app_data(Data::new(event_repo.clone()))
             .wrap(middleware::NormalizePath::default())
             .wrap(middleware::Compress::default())
             .service(actix_files::Files::new("/assets", "assets").use_last_modified(true))

@@ -3,13 +3,13 @@ use crate::domain::{
     Error,
 };
 
-pub struct VerifyUC<SessionR, SessionTokenS> {
+pub struct VerifyAuthUC<SessionR, SessionTokenS> {
     pub session_repo: SessionR,
 
     pub session_token_service: SessionTokenS,
 }
 
-impl<SessionR, SessionTokenS> VerifyUC<SessionR, SessionTokenS>
+impl<SessionR, SessionTokenS> VerifyAuthUC<SessionR, SessionTokenS>
 where
     SessionR: SessionRepo,
     SessionTokenS: SessionTokenService,

@@ -4,19 +4,19 @@ use actix_web::{
 };
 use askama::Template;
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use surrealdb::RecordId;
+use serde::Deserialize;
 
-use crate::utils::{db::Database, header::HxLocation};
+use crate::utils::header::HxLocation;
 
 mod create {
-    use std::sync::Arc;
 
+    use chrono::Duration;
     use serde_with::{serde_as, TimestampSeconds};
 
     use crate::{
-        domain::{auth::AccessType, Error},
-        infra::DiscordReq,
+        domain::{auth::AccessType, event, Error},
+        infra,
+        usecase::create_event,
         web::utils::{authorizated_check, templates},
     };
 
@@ -25,21 +25,25 @@ mod create {
     #[derive(Debug, Deserialize)]
     #[serde(rename_all = "snake_case")]
     enum SubmitType {
-        Create,
+        Publish,
         Save,
     }
 
     #[serde_as]
     #[derive(Debug, Deserialize)]
     struct Input {
-        submit_type: SubmitType,
+        submit: SubmitType,
         title: String,
         description: Option<String>,
+
+        // Slots
+        slots: Vec<SlotInput>,
+
+        // Schedule
         #[serde_as(as = "TimestampSeconds<i64>")]
         start_at: DateTime<Utc>,
         #[serde_as(as = "Option<TimestampSeconds<i64>>")]
         deadline_at: Option<DateTime<Utc>>,
-        slots: Vec<SlotInput>,
     }
 
     #[derive(Debug, Deserialize)]
@@ -50,62 +54,34 @@ mod create {
     async fn submit(
         access_type: AccessType,
         input: Json<Input>,
-        db: Data<Arc<Database>>,
+        event_repo: Data<infra::EventRepo>,
     ) -> Result<impl Responder, Error> {
         authorizated_check(&access_type)?;
 
-        let timestamp = Utc::now().timestamp_millis() as u64;
-        let id = sqids::Sqids::default().encode(&[timestamp]).unwrap();
-
-        #[derive(Debug, Serialize)]
-        struct Input {
-            id: String,
-            title: String,
-            description: Option<String>,
-            start_at: DateTime<Utc>,
-            deadline_at: Option<DateTime<Utc>>,
-            status: String,
-
-            slots: Vec<Vec<RecordId>>,
-        }
-
-        let input = Input {
-            id: id.clone(),
-            title: input.title.clone(),
-            description: input.description.clone(),
-            start_at: input.start_at,
-            deadline_at: input.deadline_at,
-            status: match &input.submit_type {
-                SubmitType::Create => "private".to_string(),
-                SubmitType::Save => "draft".to_string(),
-            },
-            slots: input
-                .slots
-                .iter()
-                .map(|slot| {
-                    slot.jobs
+        let event = create_event::CreateEventUC::new(event_repo.as_ref())
+            .execute(
+                &access_type,
+                create_event::CreateEventUCInput {
+                    kind: match &input.submit {
+                        SubmitType::Publish => create_event::CreateEventUCKind::Private,
+                        SubmitType::Save => create_event::CreateEventUCKind::Draft,
+                    },
+                    title: input.title.clone(),
+                    description: input.description.clone(),
+                    slots: input
+                        .slots
                         .iter()
-                        .map(|j| RecordId::from_table_key("job", j))
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<Vec<_>>>(),
-        };
-
-        db.query(
-            "CREATE ONLY event SET
-                    id = $id,
-                    title = $title,
-                    description = $description,
-                    status = $status,
-                    start_at = <datetime>$start_at,
-                    deadline_at = $deadline_at && <datetime>$deadline_at,
-                    slots = $slots.map(|$c| {jobs: $c})",
-        )
-        .bind(input)
-        .await
-        .unwrap()
-        .check()
-        .unwrap();
+                        .map(|s| event::EventSlot {
+                            jobs: s.jobs.clone(),
+                        })
+                        .collect::<Vec<_>>(),
+                    start_at: input.start_at,
+                    deadline_at: input.deadline_at,
+                    duration: Duration::hours(2),
+                },
+            )
+            .await?;
+        println!("{:?}", event);
 
         Ok(HttpResponse::Created()
             .append_header(HxLocation("/"))
@@ -114,7 +90,7 @@ mod create {
 
     async fn page(
         access_type: AccessType,
-        discord_req: Data<DiscordReq>,
+        discord_req: Data<infra::DiscordReq>,
     ) -> Result<impl Responder, Error> {
         authorizated_check(&access_type)?;
 

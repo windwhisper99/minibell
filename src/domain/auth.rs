@@ -10,10 +10,8 @@ use super::{
 pub enum AccessType {
     /// Access type for unauthenticated user
     Unauthenticated,
-    /// Access type for CLI
-    CLI,
     /// Access type for bot
-    Bot,
+    System,
     /// Access type for authenticated user
     Session(SessionWithMember),
 }
