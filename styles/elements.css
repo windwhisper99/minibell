@@ -58,6 +58,10 @@
   .form-label {
     @apply inline-block text-xs font-medium text-gray-700 uppercase mb-2;
   }
+
+  .form-hint {
+    @apply text-xs text-gray-500;
+  }
 }
 
 .input {

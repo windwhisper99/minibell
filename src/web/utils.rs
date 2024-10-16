@@ -149,6 +149,7 @@ pub mod templates {
     }
 
     pub fn datetime_to_string(datetime: chrono::DateTime<chrono::Utc>) -> String {
-        datetime.format("%Y-%m-%dT%H:%M").to_string()
+        // datetime.format("%Y-%m-%dT%H:%M").to_string()
+        datetime.timestamp_millis().to_string()
     }
 }

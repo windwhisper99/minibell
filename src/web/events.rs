@@ -12,7 +12,7 @@ mod create {
     use actix_web::web::Query;
     use chrono::Duration;
     use serde::Serialize;
-    use serde_with::{serde_as, TimestampSeconds};
+    use serde_with::{serde_as, TimestampMilliSeconds};
 
     use crate::{
         domain::{self, auth::AccessType, event, Error},
@@ -35,26 +35,27 @@ mod create {
 
     #[serde_as]
     #[derive(Debug, Deserialize)]
-    struct Input {
+    struct DraftEventInput {
         editing_event: Option<String>,
 
         title: String,
         description: Option<String>,
 
         // Slots
-        slots: Vec<SlotInput>,
+        slots: Vec<DraftEventSlotInput>,
 
         // Schedule
-        #[serde_as(as = "TimestampSeconds<i64>")]
+        #[serde_as(as = "TimestampMilliSeconds<i64>")]
         start_at: DateTime<Utc>,
-        #[serde_as(as = "Option<TimestampSeconds<i64>>")]
+        #[serde_as(as = "Option<TimestampMilliSeconds<i64>>")]
         deadline_at: Option<DateTime<Utc>>,
+        duration: i64,
 
         submit: SubmitType,
         is_private: bool,
     }
 
-    impl Into<draft_event::DraftEventUCInput> for Input {
+    impl Into<draft_event::DraftEventUCInput> for DraftEventInput {
         fn into(self) -> draft_event::DraftEventUCInput {
             draft_event::DraftEventUCInput {
                 kind: match &self.submit {
@@ -75,19 +76,19 @@ mod create {
                     .collect::<Vec<_>>(),
                 start_at: self.start_at,
                 deadline_at: self.deadline_at,
-                duration: Duration::hours(2),
+                duration: Duration::minutes(self.duration),
             }
         }
     }
 
     #[derive(Debug, Deserialize)]
-    struct SlotInput {
+    struct DraftEventSlotInput {
         jobs: Vec<String>,
     }
 
     #[derive(Template)]
     #[template(path = "edit_event.html")]
-    struct EditEventPage {
+    struct EditEventTemplate {
         user_status: templates::UserStatusTempl,
         editing_event: Option<String>,
 
@@ -96,11 +97,12 @@ mod create {
 
         start_at: String,
         deadline_at: String,
+        duration: String,
 
         slots: String,
     }
 
-    impl EditEventPage {
+    impl EditEventTemplate {
         fn new(
             access_type: &AccessType,
             discord_req: &infra::DiscordReq,
@@ -137,6 +139,7 @@ mod create {
                         .schedule
                         .deadline_at
                         .map_or("".to_string(), datetime_to_string),
+                    duration: event.schedule.duration.num_minutes().to_string(),
 
                     slots: serde_json::to_string(&slots).unwrap(),
                 },
@@ -149,6 +152,7 @@ mod create {
 
                     start_at: "".to_string(),
                     deadline_at: "".to_string(),
+                    duration: "120".to_string(),
 
                     slots: serde_json::to_string(&slots).unwrap(),
                 },
@@ -158,11 +162,11 @@ mod create {
 
     async fn submit(
         access_type: AccessType,
-        input: Json<Input>,
+        input: Json<DraftEventInput>,
         event_repo: Data<infra::EventRepo>,
     ) -> Result<impl Responder, Error> {
         authorizated_check(&access_type)?;
-        println!("{:?}", input);
+        println!("{:#?}", &input.0);
 
         let event = match &input.editing_event {
             Some(id) => {
@@ -209,13 +213,13 @@ mod create {
                     .execute(&access_type, id)
                     .await?;
 
-                Ok(EditEventPage::new(
+                Ok(EditEventTemplate::new(
                     &access_type,
                     discord_req.as_ref(),
                     Some(event),
                 ))
             }
-            None => Ok(EditEventPage::new(
+            None => Ok(EditEventTemplate::new(
                 &access_type,
                 discord_req.get_ref(),
                 None,

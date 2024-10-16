@@ -10,5 +10,8 @@
   },
   "scripts": {
     "build": "rspack build"
+  },
+  "devDependencies": {
+    "alpinejs": "^3.14.3"
   }
 }

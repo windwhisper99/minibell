@@ -37,7 +37,7 @@
     </div>
 
     <!-- Slots -->
-    <div class="mt-6 card" x-data="{slots:{{slots}},edit:null}">
+    <div class="mt-6 card" x-data="{slots:{{slots}},edit:null}" x-cloak>
       <div class="card-header">
         <h2 class="card-title">Slots</h2>
       </div>
@@ -109,15 +109,44 @@
       <div class="flex flex-col md:flex-row gap-4">
         <div class="flex-1 form-control">
           <label for="start_at" class="form-label"> Start At </label>
-          <input id="start_at" type="datetime-local" name="start_at"
-          class="input" required value="{{start_at|e("html")}}" />
+          <input
+            id="start_at"
+            type="datetime-local"
+            name="start_at"
+            class="input"
+            required
+            x-data
+            x-datetime-value="{{start_at}}"
+          />
         </div>
 
         <div class="flex-1 form-control">
           <label for="deadline_at" class="form-label"> Deadline </label>
-          <input id="deadline_at" type="datetime-local" name="deadline_at"
-          class="input" value="{{deadline_at|e("html")}}" />
+          <input
+            id="deadline_at"
+            type="datetime-local"
+            name="deadline_at"
+            class="input"
+            x-datetime-value="{{deadline_at}}"
+          />
         </div>
+      </div>
+
+      <div class="form-control mt-4">
+        <label for="duration" class="form-label"> Duration </label>
+        <input
+          id="duration"
+          type="number"
+          name="duration"
+          class="input md:max-w-lg"
+          min="15"
+          max="1440"
+          value="{{duration}}"
+        />
+        <p class="form-hint mt-1">
+          Duration by minutes. Minimum 15 minutes, maximum 1440 minutes (24
+          hours).
+        </p>
       </div>
     </div>
 

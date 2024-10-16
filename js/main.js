@@ -1,88 +1,31 @@
-import "./json-enc";
+import Alpine from "alpinejs";
+import "./json_enc";
+import "./job_selector";
+import "./components";
 
-document.addEventListener("alpine:init", () => {
-  function normalizeJobs(jobs) {
-    const list = Array.isArray(jobs) ? jobs : jobs.split(",");
-    return list.reduce((acc, key) => {
-      acc[key] = true;
-      return acc;
-    }, {});
+Alpine.directive("datetime-value", (el, { expression }, { evaluate }) => {
+  if (!expression || !expression.length) {
+    return;
   }
 
-  function listJobs(selected) {
-    return Object.keys(selected).filter((key) => selected[key]);
+  function addZero(i) {
+    if (i < 10) {
+      i = "0" + i;
+    }
+    return String(i);
   }
 
-  Alpine.data("switcher", (checked = false) => ({
-    checked,
+  const d = new Date(Number(expression));
+  const date = [
+    d.getFullYear().toString(),
+    addZero(d.getMonth() + 1),
+    addZero(d.getDate()),
+  ];
+  const time = [addZero(d.getHours()), addZero(d.getMinutes())];
 
-    toggle() {
-      this.checked = !this.checked;
-    },
-    root: {
-      [":class"]() {
-        return this.checked ? "active" : "";
-      },
-      ["@click"]() {
-        this.toggle();
-      },
-    },
-  }));
-
-  Alpine.data("jobSelector", (initJobs) => ({
-    selected: {},
-    update(jobs) {
-      if (jobs) this.selected = normalizeJobs(jobs);
-      else this.selected = {};
-    },
-    init() {
-      if (initJobs) this.selected = normalizeJobs(initJobs);
-    },
-
-    jobButton(job) {
-      return {
-        ["@click"](evt) {
-          this.selected[job] = !this.selected[job];
-
-          evt.target.dispatchEvent(
-            new CustomEvent("jobschange", {
-              detail: listJobs(this.selected),
-              bubbles: true,
-            })
-          );
-        },
-        [":class"]() {
-          return this.selected[job] ? "active" : "";
-        },
-      };
-    },
-
-    roleButton(roleJobs) {
-      const jobs = Array.isArray(roleJobs) ? roleJobs : roleJobs.split(",");
-
-      return {
-        ["@click"](evt) {
-          // If all jobs are selected, deselect all role jobs
-          const allSelected = jobs.every((key) => this.selected[key]);
-
-          if (allSelected) {
-            jobs.forEach((key) => {
-              this.selected[key] = false;
-            });
-          } else {
-            jobs.forEach((key) => {
-              this.selected[key] = true;
-            });
-          }
-
-          evt.target.dispatchEvent(
-            new CustomEvent("jobschange", {
-              detail: listJobs(this.selected),
-              bubbles: true,
-            })
-          );
-        },
-      };
-    },
-  }));
+  const value = `${date.join("-")}T${time.join(":")}`;
+  el.value = value;
 });
+
+window.Alpine = Alpine;
+Alpine.start();
