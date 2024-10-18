@@ -37,11 +37,11 @@
     </div>
 
     <!-- Slots -->
-    <div class="mt-6 card" x-data="{slots:{{slots}},edit:null}" x-cloak>
+    <div class="mt-6 card" x-data="{slots:{{slots}},edit:null}">
       <div class="card-header">
         <h2 class="card-title">Slots</h2>
       </div>
-      <template x-for="(slot,si) in slots">
+      <template x-for="(slot,si) in slots" :key="si">
         <input
           type="hidden"
           data-array="true"
@@ -51,7 +51,7 @@
       </template>
 
       <div class="flex flex-row gap-3 flex-wrap">
-        <template x-for="(slot,si) in slots">
+        <template x-for="(slot,si) in slots" x-cloak>
           <button
             type="button"
             class="h-14 w-14 rounded-sm border border-slate-300 bg-slate-300 hover:bg-slate-300/80"

@@ -143,7 +143,7 @@ pub mod templates {
         pub fn new(access_type: &AccessType, discord_req: &DiscordReq) -> Self {
             Self {
                 status: UserStatus::from(access_type),
-                auth_url: discord_req.get_oauth2_url(),
+                auth_url: discord_req.get_oauth2_url("http://localhost:8080/auth/redirect"),
             }
         }
     }

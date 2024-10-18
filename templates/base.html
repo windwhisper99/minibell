@@ -11,17 +11,23 @@
     <!--   defer -->
     <!--   src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" -->
     <!-- ></script> -->
-    <script defer src="/assets/main.js"></script>
     <script
       src="https://unpkg.com/htmx.org@2.0.3"
       crossorigin="anonymous"
     ></script>
+    <script src="https://unpkg.com/htmx-ext-alpine-morph@2.0.0/alpine-morph.js"></script>
+
+    <script
+      defer
+      src="https://unpkg.com/@alpinejs/morph@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script defer src="/assets/main.js"></script>
 
     <link rel="stylesheet" href="/assets/style.css" />
 
     <title>Astral Bells</title>
   </head>
-  <body>
+  <body hx-boost="true" hx-target="this" hx-ext="alpine-morph">
     <!-- Navbar -->
     <div class="h-16 border-b flex sticky top-0 bg-white z-100">
       <div class="container px-2 flex flex-row justify-between mx-auto">

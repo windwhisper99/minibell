@@ -181,10 +181,10 @@ impl member::DiscordService for &DiscordReq {
         })
     }
 
-    fn get_oauth2_url(&self) -> String {
+    fn get_oauth2_url(&self, redirect_uri: &str) -> String {
         format!(
             "https://discord.com/api/oauth2/authorize?client_id={}&redirect_uri={}&response_type=code&scope=identify",
-            self.client_id, url_escape::encode_www_form_urlencoded(&self.redirect_uri)
+            self.client_id, url_escape::encode_www_form_urlencoded(redirect_uri)
         )
     }
 }

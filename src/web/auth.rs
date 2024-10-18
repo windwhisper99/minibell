@@ -1,11 +1,16 @@
 use actix_web::{
     cookie::Cookie,
+    http::StatusCode,
     web::{get, scope, Data, Query, Redirect, ServiceConfig},
-    Responder,
+    HttpResponse, Responder,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-use crate::{infra, usecase::sign_in};
+use crate::{
+    domain::{auth::AccessType, Error},
+    infra,
+    usecase::{get_auth_information, sign_in},
+};
 
 #[derive(Deserialize)]
 struct RedirectQuery {
@@ -47,6 +52,38 @@ async fn redirect(
         .add_cookie(&cookie)
 }
 
+#[derive(Debug, Deserialize)]
+struct GetAuthInformationInput {
+    redirect_uri: String,
+}
+
+async fn get_auth_information(
+    body: Query<GetAuthInformationInput>,
+    access_type: AccessType,
+    discord_req: Data<infra::DiscordReq>,
+) -> Result<impl Responder, Error> {
+    let result = get_auth_information::GetAuthInformation::new(discord_req.as_ref())
+        .execute(
+            get_auth_information::GetAuthInformationInput {
+                redirect_uri: body.redirect_uri.clone(),
+            },
+            &access_type,
+        )
+        .await?;
+    println!("{:?}", result);
+
+    #[derive(Debug, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Result {
+        discord_oauth_url: String,
+    }
+
+    Ok(HttpResponse::build(StatusCode::OK).json(Result {
+        discord_oauth_url: result.discord_oauth_url,
+    }))
+}
+
 pub fn config(cfg: &mut ServiceConfig) {
-    cfg.service(scope("auth").route("/redirect", get().to(redirect)));
+    cfg.service(scope("auth").route("/redirect", get().to(redirect)))
+        .route("api/auth", get().to(get_auth_information));
 }

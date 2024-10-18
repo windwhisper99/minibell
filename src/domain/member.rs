@@ -50,5 +50,5 @@ pub trait DiscordService {
     ) -> Result<MemberInsertInput, Error>;
 
     /// Get discord Oauth2 URL
-    fn get_oauth2_url(&self) -> String;
+    fn get_oauth2_url(&self, redirect_url: &str) -> String;
 }
