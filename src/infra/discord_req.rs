@@ -15,8 +15,6 @@ pub struct DiscordReq {
     client_secret: String,
     guild_id: u64,
     token: String,
-
-    redirect_uri: String,
 }
 
 #[serde_as]
@@ -55,8 +53,6 @@ impl DiscordReq {
             .parse::<u64>()
             .expect("DISCORD_GUILD_ID must be a number");
         let token = std::env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN must be set");
-        let redirect_uri =
-            std::env::var("DISCORD_REDIRECT_URI").expect("DISCORD_REDIRECT_URI must be set");
 
         Self {
             reqwest,
@@ -65,13 +61,11 @@ impl DiscordReq {
             client_secret,
             guild_id,
             token,
-
-            redirect_uri,
         }
     }
 
     /// Fetch access token from Oauth2 code
-    async fn fetch_user_tokens(&self, code: &str) -> Result<String, Error> {
+    async fn fetch_user_tokens(&self, code: &str, redirect_uri: &str) -> Result<String, Error> {
         #[derive(Debug, Deserialize)]
         struct AuthorizationResult {
             access_token: String,
@@ -84,7 +78,7 @@ impl DiscordReq {
                 ("client_secret", self.client_secret.as_str()),
                 ("grant_type", "authorization_code"),
                 ("code", code),
-                ("redirect_uri", self.redirect_uri.as_str()),
+                ("redirect_uri", redirect_uri),
             ])
             .send()
             .await?
@@ -130,8 +124,8 @@ impl DiscordReq {
             .map_err(Into::into)
     }
 
-    async fn auth(&self, code: &str) -> Result<MemberPayload, Error> {
-        let access_token = self.fetch_user_tokens(code).await?;
+    async fn auth(&self, code: &str, redirect_uri: &str) -> Result<MemberPayload, Error> {
+        let access_token = self.fetch_user_tokens(code, redirect_uri).await?;
         let user_id = self.fetch_user_id(&access_token).await?;
         self.fetch_member_info(user_id).await
     }
@@ -157,8 +151,8 @@ impl DiscordReq {
 impl member::DiscordService for &DiscordReq {
     type DiscordMember = MemberPayload;
 
-    async fn sign_in(&self, code: &str) -> Result<Self::DiscordMember, Error> {
-        self.auth(code).await
+    async fn sign_in(&self, code: &str, redirect_uri: &str) -> Result<Self::DiscordMember, Error> {
+        self.auth(code, redirect_uri).await
     }
 
     async fn get_member(&self, member_id: member::MemberId) -> Result<Self::DiscordMember, Error> {

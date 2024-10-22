@@ -1,10 +1,11 @@
 use clap::{Parser, Subcommand};
 
+mod api;
 mod domain;
 mod infra;
 mod migration;
 mod usecase;
-mod web;
+// mod web;
 
 #[derive(Parser)]
 #[command(version)]
@@ -52,6 +53,6 @@ async fn main() -> std::io::Result<()> {
             println!("Running discord bot");
             Ok(())
         }
-        None => web::run(args.host, args.port).await,
+        None => api::run(args.host, args.port).await,
     }
 }

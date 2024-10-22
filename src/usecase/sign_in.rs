@@ -38,9 +38,12 @@ where
 
     /// Execute sign in with discord code
     /// Return the session token
-    pub async fn execute(&self, discord_code: &str) -> Result<String, Error> {
+    pub async fn execute(&self, discord_code: &str, redirect_uri: &str) -> Result<String, Error> {
         // Sign in discord
-        let discord_member = self.discord_service.sign_in(discord_code).await?;
+        let discord_member = self
+            .discord_service
+            .sign_in(discord_code, redirect_uri)
+            .await?;
         // Insert or update member
         let member_insert_input = self
             .discord_service

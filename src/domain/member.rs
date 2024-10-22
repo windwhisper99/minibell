@@ -39,7 +39,7 @@ pub trait DiscordService {
     type DiscordMember;
 
     /// Sign in with discord Oauth2 code
-    async fn sign_in(&self, code: &str) -> Result<Self::DiscordMember, Error>;
+    async fn sign_in(&self, code: &str, redirect_url: &str) -> Result<Self::DiscordMember, Error>;
     /// Get member by given id
     async fn get_member(&self, member_id: MemberId) -> Result<Self::DiscordMember, Error>;
 
