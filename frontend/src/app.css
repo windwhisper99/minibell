@@ -79,23 +79,23 @@
   &.tank {
     @apply bg-blue-400 text-white hover:bg-blue-400/90;
     &.active {
-      @apply ring-4 ring-blue-400/60;
+      @apply ring ring-blue-600;
     }
   }
   &.healer {
     @apply bg-green-400 text-white hover:bg-green-400/90;
     &.active {
-      @apply ring-4 ring-green-300/60;
+      @apply ring ring-green-600;
     }
   }
   &.dps {
     @apply bg-red-400 text-white hover:bg-red-400/90;
     &.active {
-      @apply ring-4 ring-red-300/60;
+      @apply ring ring-red-600;
     }
   }
 }
 
 .tooltip {
-  @apply bg-slate-700 text-white text-xs font-medium px-2 py-1 rounded-sm absolute width-[max-content] top-0 left-0;
+  @apply bg-slate-700 text-white text-xs font-medium px-2 py-1 rounded-sm absolute width-[max-content] top-0 left-0 z-20;
 }

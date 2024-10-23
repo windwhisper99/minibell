@@ -1,8 +1,12 @@
-import { For } from "solid-js";
+import { Accessor, batch, createSignal, For, Show } from "solid-js";
 import { draftEventAction } from "~/utils/api";
 import { UseForm, useForm } from "~/utils/form";
 import { Switcher } from "./switcher";
 import { Tooltip } from "./tooltip";
+import { JobsPicker } from "./jobs-picker";
+import cn from "classnames";
+import { createStore, produce } from "solid-js/store";
+import { JOBS, ROLE_GROUPS, ROLES } from "~/utils/jobs";
 
 interface IForm {
   title: string;
@@ -44,11 +48,36 @@ function InfoCard(props: { form: UseForm<IForm> }) {
   );
 }
 
-function SlotButton(props: { jobs: string[] }) {
+function SlotButton(props: {
+  jobs: string[];
+  index: number;
+  editing: Accessor<number | undefined>;
+  onClick: () => void;
+}) {
   const title = () => {
     return props.jobs.length > 1
       ? props.jobs.map((e) => e.toUpperCase()).join(", ")
       : "Any";
+  };
+
+  const label = () => {
+    if (props.jobs.length === 0) return "Any";
+    else if (props.jobs.length === 1) return props.jobs[0].toUpperCase();
+    else {
+      // Get the role of all jobs
+      const roles = props.jobs.map((job) => JOBS[job].role);
+      // Deduplicate the roles
+      const uniqueRoles = [...new Set(roles)];
+
+      if (uniqueRoles.length === 1) return ROLES[uniqueRoles[0]].name;
+      // Get the group of all roles
+      const group = uniqueRoles.map((role) => ROLES[role].group);
+      // Deduplicate the groups
+      const uniqueGroups = [...new Set(group)];
+
+      if (uniqueGroups.length === 1) return ROLE_GROUPS[uniqueGroups[0]].name;
+      else return "Mixed";
+    }
   };
 
   return (
@@ -56,17 +85,28 @@ function SlotButton(props: { jobs: string[] }) {
       {({ setOpen, ref }) => (
         <button
           type="button"
-          class="h-14 w-14 rounded-sm border border-slate-300 bg-slate-300 hover:bg-slate-300/80 font-semibold text-sm"
+          class={cn(
+            "h-14 w-14 rounded-sm border border-slate-300 bg-slate-300 hover:bg-slate-300/80 font-semibold text-sm",
+            props.editing() === props.index ? "ring ring-slate-400" : ""
+          )}
           ref={ref}
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
-        ></button>
+          onClick={props.onClick}
+        >
+          {label()}
+        </button>
       )}
     </Tooltip>
   );
 }
 
 function SlotCard(props: { form: UseForm<IForm> }) {
+  const [editing, setEditing] = createSignal<number>();
+  const isEditing = () => editing() !== undefined;
+
+  const [slots, setSlots] = createStore(props.form.form.slots);
+
   return (
     <div class="card mt-6">
       <div class="card-header">
@@ -74,23 +114,70 @@ function SlotCard(props: { form: UseForm<IForm> }) {
       </div>
 
       <div class="flex flex-row gap-3 flex-wrap">
-        <For each={props.form.form.slots}>
-          {(value, i) => <SlotButton jobs={value.jobs} />}
+        <For each={slots}>
+          {(value, i) => (
+            <SlotButton
+              jobs={value.jobs}
+              editing={editing}
+              index={i()}
+              onClick={() =>
+                setEditing((current) => {
+                  if (current === i()) return undefined;
+                  return i();
+                })
+              }
+            />
+          )}
         </For>
 
         <button
           type="button"
           class="h-14 w-14 rounded-sm border bg-slate-50 hover:bg-slate-100 flex items-center justify-center"
-          onClick={() =>
-            props.form.updateForm((prev) => ({
-              ...prev,
-              slots: [...prev.slots, { jobs: [] }],
-            }))
-          }
+          onClick={() => {
+            batch(() => {
+              setSlots((prev) => [...prev, { jobs: [] }]);
+              setEditing(slots.length - 1);
+            });
+          }}
         >
           <i class="i-tabler-plus?auto w-6 h-6"></i>
         </button>
       </div>
+
+      <Show when={isEditing()}>
+        <div class="mt-4 flex flex-row">
+          <div class="w-5 relative before:content-empty before:absolute before:top-0 before:bottom-0 before:w-2 before:bg-slate-100"></div>
+
+          <div>
+            <JobsPicker
+              jobs={slots[editing()!].jobs}
+              onChanges={(jobs) => {
+                setSlots(editing()!, { jobs });
+              }}
+            />
+            <div class="flex-1">
+              <Show when={editing() !== 0}>
+                <div class="mt-6 space-x-2">
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    onClick={() => {
+                      batch(() => {
+                        setSlots(
+                          produce((draft) => draft.splice(editing()!, 1))
+                        );
+                        setEditing(undefined);
+                      });
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </Show>
+            </div>
+          </div>
+        </div>
+      </Show>
     </div>
   );
 }

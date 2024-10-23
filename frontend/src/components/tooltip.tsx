@@ -10,7 +10,7 @@ export function Tooltip(props: {
 }) {
   const { open, refs, floatingStyle, setOpen } = useFloating({
     placement: "top",
-    offset: 2,
+    offset: 4,
   });
 
   return (

@@ -1,13 +1,13 @@
 import { Action, useAction } from "@solidjs/router";
 import { Accessor, createSignal } from "solid-js";
-import { createStore } from "solid-js/store";
+import { createStore, SetStoreFunction, unwrap } from "solid-js/store";
 
 export type UseForm<T> = {
   form: T;
   loading: Accessor<boolean>;
   formField: (e: Event) => void;
   formFieldWith: (name: string | string[]) => (value: any) => void;
-  updateForm: (updater: (prev: T) => T) => void;
+  updateForm: SetStoreFunction<T>;
   submitForm: (e: Event) => Promise<void>;
 };
 
@@ -79,10 +79,6 @@ export function useForm<T extends object>(
     setFormField(path, value);
   };
 
-  const updateForm = (updater: (prev: T) => T) => {
-    setForm(updater);
-  };
-
   const setFormField = (name: string | string[], value: any) => {
     const path = Array.isArray(name) ? name : name.split(".");
 
@@ -100,9 +96,16 @@ export function useForm<T extends object>(
     e.preventDefault();
 
     setLoading(true);
-    await submitAction(form);
+    await submitAction(unwrap(form));
     setLoading(false);
   };
 
-  return { form, formField, formFieldWith, updateForm, submitForm, loading };
+  return {
+    form,
+    formField,
+    formFieldWith,
+    updateForm: setForm,
+    submitForm,
+    loading,
+  };
 }
