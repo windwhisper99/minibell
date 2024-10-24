@@ -9,8 +9,8 @@ use actix_web::{
 use crate::infra;
 
 mod auth;
-// mod events;
 mod dto;
+mod events;
 mod utils;
 
 pub async fn run(host: String, port: u16) -> std::io::Result<()> {
@@ -33,8 +33,11 @@ pub async fn run(host: String, port: u16) -> std::io::Result<()> {
             .app_data(Data::new(event_repo.clone()))
             .wrap(middleware::NormalizePath::default())
             .wrap(middleware::Compress::default())
-            .service(scope("api").configure(auth::config))
-        // .configure(events::config)
+            .service(
+                scope("api")
+                    .configure(auth::config)
+                    .configure(events::config),
+            )
     })
     .bind((host, port))?
     .run()

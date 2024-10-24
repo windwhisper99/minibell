@@ -24,7 +24,7 @@ impl From<event::EventStatus> for EventStatusModel {
             event::EventStatus::Draft => Self::Draft,
             event::EventStatus::Public => Self::Public,
             event::EventStatus::Private => Self::Private,
-            event::EventStatus::InProgress => Self::InProgress,
+            event::EventStatus::InProcess => Self::InProgress,
             event::EventStatus::Finished => Self::Finished,
         }
     }
@@ -36,7 +36,7 @@ impl Into<event::EventStatus> for EventStatusModel {
             Self::Draft => event::EventStatus::Draft,
             Self::Public => event::EventStatus::Public,
             Self::Private => event::EventStatus::Private,
-            Self::InProgress => event::EventStatus::InProgress,
+            Self::InProgress => event::EventStatus::InProcess,
             Self::Finished => event::EventStatus::Finished,
         }
     }

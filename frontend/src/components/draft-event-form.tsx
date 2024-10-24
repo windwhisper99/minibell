@@ -1,20 +1,26 @@
-import { Accessor, batch, createSignal, For, Show } from "solid-js";
-import { draftEventAction } from "~/utils/api";
+import { Accessor, batch, createMemo, createSignal, For, Show } from "solid-js";
+import { draftEventAction, IEvent } from "~/utils/api";
 import { UseForm, useForm } from "~/utils/form";
 import { Switcher } from "./switcher";
 import { Tooltip } from "./tooltip";
 import { JobsPicker } from "./jobs-picker";
 import cn from "classnames";
-import { createStore, produce } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { JOBS, ROLE_GROUPS, ROLES } from "~/utils/jobs";
+import { datetimeLocalFormat } from "~/utils/ui";
 
-interface IForm {
+export interface IDraftEventForm {
   title: string;
-  description: string;
+  description?: string;
   slots: { jobs: string[] }[];
+
+  startAt: number;
+  deadlineAt?: number;
+  duration: number;
+  isPrivate: boolean;
 }
 
-function InfoCard(props: { form: UseForm<IForm> }) {
+function InfoCard(props: { form: UseForm<IDraftEventForm> }) {
   return (
     <div class="card">
       <div class="form-control">
@@ -40,7 +46,7 @@ function InfoCard(props: { form: UseForm<IForm> }) {
           id="description"
           name="description"
           class="input"
-          value={props.form.form.description}
+          value={props.form.form.description ?? ""}
           onChange={props.form.formField}
         />
       </div>
@@ -55,7 +61,7 @@ function SlotButton(props: {
   onClick: () => void;
 }) {
   const title = () => {
-    return props.jobs.length > 1
+    return props.jobs.length >= 1
       ? props.jobs.map((e) => e.toUpperCase()).join(", ")
       : "Any";
   };
@@ -101,10 +107,53 @@ function SlotButton(props: {
   );
 }
 
-function SlotCard(props: { form: UseForm<IForm> }) {
-  const [editing, setEditing] = createSignal<number>();
-  const isEditing = () => editing() !== undefined;
+function SlotEditor(props: {
+  editing: number;
+  slot: { jobs: string[] };
+  onRemove: () => void;
+}) {
+  const slotStore = createMemo(() => {
+    const [slot, setSlot] = createStore(props.slot);
+    return { slot, setSlot };
+  });
 
+  return (
+    <div class="mt-4 flex flex-row">
+      <div class="w-5 relative before:content-empty before:absolute before:top-0 before:bottom-0 before:w-2 before:bg-slate-100"></div>
+
+      <div>
+        <JobsPicker
+          jobs={slotStore().slot.jobs}
+          onChanges={(jobs) => slotStore().setSlot("jobs", jobs)}
+        />
+        <div class="flex-1">
+          <div class="mt-6 space-x-2">
+            <Show when={props.editing !== 0}>
+              <button
+                type="button"
+                class="btn btn-danger"
+                onClick={() => props.onRemove()}
+              >
+                Remove
+              </button>
+            </Show>
+
+            <button
+              type="button"
+              class="btn"
+              onClick={() => slotStore().setSlot("jobs", [])}
+            >
+              Any
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlotCard(props: { form: UseForm<IDraftEventForm> }) {
+  const [editing, setEditing] = createSignal<number>();
   const [slots, setSlots] = createStore(props.form.form.slots);
 
   return (
@@ -144,45 +193,23 @@ function SlotCard(props: { form: UseForm<IForm> }) {
         </button>
       </div>
 
-      <Show when={isEditing()}>
-        <div class="mt-4 flex flex-row">
-          <div class="w-5 relative before:content-empty before:absolute before:top-0 before:bottom-0 before:w-2 before:bg-slate-100"></div>
-
-          <div>
-            <JobsPicker
-              jobs={slots[editing()!].jobs}
-              onChanges={(jobs) => {
-                setSlots(editing()!, { jobs });
-              }}
-            />
-            <div class="flex-1">
-              <Show when={editing() !== 0}>
-                <div class="mt-6 space-x-2">
-                  <button
-                    type="button"
-                    class="btn btn-danger"
-                    onClick={() => {
-                      batch(() => {
-                        setSlots(
-                          produce((draft) => draft.splice(editing()!, 1))
-                        );
-                        setEditing(undefined);
-                      });
-                    }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </Show>
-            </div>
-          </div>
-        </div>
+      <Show when={editing() !== undefined}>
+        <SlotEditor
+          editing={editing()!}
+          slot={slots[editing()!]}
+          onRemove={() => {
+            batch(() => {
+              setSlots((prev) => prev.filter((_, i) => i !== editing()));
+              setEditing(undefined);
+            });
+          }}
+        />
       </Show>
     </div>
   );
 }
 
-function ScheduleCard(props: { form: UseForm<IForm> }) {
+function ScheduleCard(props: { form: UseForm<IDraftEventForm> }) {
   return (
     <div class="card mt-6">
       <div class="card-header">
@@ -191,28 +218,30 @@ function ScheduleCard(props: { form: UseForm<IForm> }) {
 
       <div class="flex flex-col md:flex-row gap-4">
         <div class="flex-1 form-control">
-          <label for="start_at" class="form-label">
+          <label for="startAt" class="form-label">
             Start At
           </label>
           <input
-            id="start_at"
+            id="startAt"
             type="datetime-local"
-            name="start_at"
+            name="startAt"
             class="input"
+            value={datetimeLocalFormat(props.form.form.startAt)}
             onChange={props.form.formField}
             required
           />
         </div>
 
         <div class="flex-1 form-control">
-          <label for="deadline_at" class="form-label">
+          <label for="deadlineAt" class="form-label">
             Deadline
           </label>
           <input
-            id="deadline_at"
+            id="deadlineAt"
             type="datetime-local"
-            name="deadline_at"
+            name="deadlineAt"
             class="input"
+            value={datetimeLocalFormat(props.form.form.deadlineAt ?? 0)}
             onChange={props.form.formField}
           />
         </div>
@@ -229,6 +258,7 @@ function ScheduleCard(props: { form: UseForm<IForm> }) {
           class="input md:max-w-lg"
           min="15"
           max="1440"
+          value={props.form.form.duration}
           onChange={props.form.formField}
         />
         <p class="form-hint mt-1">
@@ -240,14 +270,35 @@ function ScheduleCard(props: { form: UseForm<IForm> }) {
   );
 }
 
-export default function DraftEventForm(props: { class?: string }) {
-  const form = useForm<IForm>(
-    { title: "", description: "", slots: [{ jobs: [] }] },
+export default function DraftEventForm(props: {
+  class?: string;
+  event?: IEvent;
+}) {
+  const form = useForm<IDraftEventForm>(
+    props.event
+      ? {
+          title: props.event.title,
+          description: props.event.description,
+          slots: props.event.slots,
+
+          startAt: props.event.startAt,
+          deadlineAt: props.event.deadlineAt,
+          duration: props.event.duration,
+
+          isPrivate: false,
+        }
+      : {
+          title: "",
+          slots: [{ jobs: [] }],
+          startAt: 0,
+          duration: 60,
+          isPrivate: false,
+        },
     draftEventAction
   );
 
   return (
-    <form onSubmit={form.submitForm} method="post" class={props.class}>
+    <form method="post" class={props.class}>
       <InfoCard form={form} />
 
       <SlotCard form={form} />
@@ -261,8 +312,9 @@ export default function DraftEventForm(props: { class?: string }) {
 
         <div class="border rounded-md p-4">
           <Switcher
-            name="is_private"
-            onChange={form.formFieldWith("is_private")}
+            name="isPrivate"
+            checked={form.form.isPrivate}
+            onChange={form.formFieldWith("isPrivate")}
           >
             <p class="font-medium">Publish event as private</p>
             <p class="mt-1 text-sm">
@@ -272,10 +324,18 @@ export default function DraftEventForm(props: { class?: string }) {
         </div>
 
         <div class="flex flex-row gap-x-2 mt-4">
-          <button type="submit" class="btn btn-primary">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            onClick={form.submitForm("publish")}
+          >
             Publish
           </button>
-          <button type="submit" class="btn btn-ghost">
+          <button
+            type="submit"
+            class="btn btn-ghost"
+            onClick={form.submitForm("save")}
+          >
             Save as draft
           </button>
         </div>

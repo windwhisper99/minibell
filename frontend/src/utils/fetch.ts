@@ -1,3 +1,5 @@
+"use server";
+
 import { getCookie } from "vinxi/http";
 
 export interface FetchOptions {
@@ -14,13 +16,10 @@ export function post<T>(options: FetchOptions, body: any) {
 }
 
 export function isLogin() {
-  "use server";
   return !!getCookie("token");
 }
 
 function fetchApi<T>(method: string, options: FetchOptions, body?: any) {
-  "use server";
-
   const token = getCookie("token");
   const url = new URL(options.path, "http://localhost:8080");
   if (options.query) {

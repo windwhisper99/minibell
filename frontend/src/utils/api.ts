@@ -1,10 +1,34 @@
-import { action } from "@solidjs/router";
+import { action, redirect } from "@solidjs/router";
+import { IDraftEventForm } from "~/components/draft-event-form";
+import { get, post } from "./fetch";
 
-export const draftEventAction = action(async (data) => {
+export interface IEvent {
+  id: string;
+  status: string;
+
+  title: string;
+  description?: string;
+
+  slots: { jobs: string[] }[];
+
+  startAt: number;
+  deadlineAt?: number;
+  duration: number;
+}
+
+export const draftEventAction = action(async (input: IDraftEventForm) => {
   "use server";
 
-  // Delay for 2 seconds
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  const response = await post<{ id: string; published: boolean }>(
+    { path: "/api/events/draft" },
+    input
+  );
 
-  console.log(data);
+  if (response.published) throw redirect("/");
+  else throw redirect(`/events/create?id=${response.id}`);
 }, "draft_event");
+
+export const draftEventQuery = async (id: string) => {
+  "use server";
+  return await get<IEvent>({ path: `/api/events/draft/${id}` });
+};

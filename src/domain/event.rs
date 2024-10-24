@@ -11,7 +11,7 @@ pub enum EventStatus {
     Draft,
     Private,
     Public,
-    InProgress,
+    InProcess,
     Finished,
 }
 
@@ -25,11 +25,11 @@ impl EventStatus {
     }
 
     pub fn is_started(&self) -> bool {
-        self == &EventStatus::InProgress || self == &EventStatus::Finished
+        self == &EventStatus::InProcess || self == &EventStatus::Finished
     }
 
-    pub fn is_in_progress(&self) -> bool {
-        self == &EventStatus::InProgress
+    pub fn is_in_process(&self) -> bool {
+        self == &EventStatus::InProcess
     }
 }
 
@@ -365,7 +365,7 @@ impl Event {
                     return Err(Error::Forbidden);
                 }
 
-                self.status = EventStatus::InProgress;
+                self.status = EventStatus::InProcess;
                 Ok(self.update_with_log(EventLogKind::StartManually))
             }
             EventStartInput::Auto => {
@@ -374,7 +374,7 @@ impl Event {
                     return Err(Error::BadAutomation);
                 }
 
-                self.status = EventStatus::InProgress;
+                self.status = EventStatus::InProcess;
                 Ok(self.update_with_log(EventLogKind::Start))
             }
         }
@@ -388,7 +388,7 @@ impl Event {
     ) -> Result<EventLog, Error> {
         self.host.verify_write_access(access_type)?;
         // Can only finish in progress event
-        if !self.status.is_in_progress() {
+        if !self.status.is_in_process() {
             return Err(Error::BadRequest(
                 "Can only finish in progress event".to_string(),
             ));

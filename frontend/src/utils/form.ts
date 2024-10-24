@@ -8,7 +8,7 @@ export type UseForm<T> = {
   formField: (e: Event) => void;
   formFieldWith: (name: string | string[]) => (value: any) => void;
   updateForm: SetStoreFunction<T>;
-  submitForm: (e: Event) => Promise<void>;
+  submitForm: (submitType?: string) => (e: Event) => Promise<void>;
 };
 
 /**
@@ -92,11 +92,18 @@ export function useForm<T extends object>(
     });
   };
 
-  const submitForm = async (e: Event) => {
+  const submitForm = (submitType?: string) => async (e: Event) => {
     e.preventDefault();
 
     setLoading(true);
-    await submitAction(unwrap(form));
+
+    const data = unwrap(form);
+    if (submitType) {
+      await submitAction({ ...data, submitType });
+    } else {
+      await submitAction(data);
+    }
+
     setLoading(false);
   };
 

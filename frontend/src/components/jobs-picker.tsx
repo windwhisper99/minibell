@@ -144,7 +144,7 @@ export function JobsPicker(props: {
               <div class="mt-4 flex flex-col flex-wrap md:flex-row gap-y-4">
                 <For each={roles.map((r) => ROLES[r])}>
                   {(role) => (
-                    <div class="md:w-1/2 even:pl-4">
+                    <div class="md:w-1/2 md:even:pl-4">
                       <RoleSection
                         role={role}
                         selected={jobObj()}
