@@ -1,5 +1,0 @@
-@import "@unocss/reset/tailwind-compat.css";
-@import "./elements.css";
-
-@unocss;
-@unocss default;
