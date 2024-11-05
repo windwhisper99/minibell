@@ -7,13 +7,15 @@
     "start": "vinxi start"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.6.11",
+    "@floating-ui/dom": "^1.6.12",
+    "@kobalte/core": "^0.13.7",
     "@modular-forms/solid": "^0.24.1",
     "@solid-primitives/presence": "^0.0.6",
-    "@solidjs/router": "^0.14.9",
-    "@solidjs/start": "^1.0.8",
+    "@solidjs/router": "^0.15.0",
+    "@solidjs/start": "^1.0.10",
+    "@unocss/postcss": "^0.63.6",
     "classnames": "^2.5.1",
-    "solid-js": "^1.9.1",
+    "solid-js": "^1.9.3",
     "solid-motionone": "^1.0.2",
     "vinxi": "^0.4.3"
   },
@@ -21,7 +23,7 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@unocss/reset": "^0.63.4",
-    "unocss": "^0.63.4"
+    "@unocss/reset": "^0.63.6",
+    "unocss": "^0.63.6"
   }
 }

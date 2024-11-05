@@ -131,6 +131,27 @@ impl EventSchedule {
 }
 
 #[derive(Debug, Clone)]
+pub enum EventObjective {
+    Practice { progression: f64 },
+    Competition,
+    Loot,
+}
+
+#[derive(Debug, Clone)]
+pub enum EventDuty {
+    Duty {
+        duty_id: String,
+        /// The minimum progression required to join the event
+        prog_min: f64,
+
+        ojective: EventObjective,
+    },
+    Custom {
+        name: String,
+    },
+}
+
+#[derive(Debug, Clone)]
 pub struct Event {
     pub id: String,
     pub host: EventHost,

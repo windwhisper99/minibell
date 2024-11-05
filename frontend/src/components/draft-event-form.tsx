@@ -1,5 +1,21 @@
-import { Accessor, batch, createMemo, createSignal, For, Show } from "solid-js";
-import { draftEventAction, IEvent } from "~/utils/api";
+import {
+  Accessor,
+  batch,
+  createMemo,
+  createResource,
+  createSignal,
+  For,
+  Show,
+  Suspense,
+} from "solid-js";
+import {
+  draftEventAction,
+  dutyQuery,
+  IDuty,
+  IDutyCategory,
+  IDutyReview,
+  IEvent,
+} from "~/utils/api";
 import { UseForm, useForm } from "~/utils/form";
 import { Switcher } from "./switcher";
 import { Tooltip } from "./tooltip";
@@ -8,8 +24,11 @@ import cn from "classnames";
 import { createStore } from "solid-js/store";
 import { JOBS, ROLE_GROUPS, ROLES } from "~/utils/jobs";
 import { datetimeLocalFormat } from "~/utils/ui";
+import { Select } from "@kobalte/core/select";
 
 export interface IDraftEventForm {
+  dutyId?: string;
+
   title: string;
   description?: string;
   slots: { jobs: string[] }[];
@@ -20,9 +39,127 @@ export interface IDraftEventForm {
   isPrivate: boolean;
 }
 
-function InfoCard(props: { form: UseForm<IDraftEventForm> }) {
+function DutySelection(props: {
+  form: UseForm<IDraftEventForm>;
+  duties: IDutyCategory[];
+}) {
+  return (
+    <Select<IDutyReview, IDutyCategory>
+      options={props.duties}
+      optionValue="id"
+      optionGroupChildren="duties"
+      disallowEmptySelection={true}
+      placeholder="Select duty"
+      value={
+        props.form.form.dutyId
+          ? props.duties.find((duty) => duty.id === props.form.form.dutyId)
+              ?.duties[0]
+          : undefined
+      }
+      onChange={(value) => {
+        props.form.updateForm("dutyId", value?.id);
+      }}
+      itemComponent={(props) => (
+        <Select.Item item={props.item} class="px-4 py-2">
+          <Select.ItemLabel class="select-none cursor-pointer">
+            {props.item.rawValue.name}
+            <Show when={props.item.rawValue.shortName}>
+              <span class="text-sm bg-slate-300 rounded-sm px-1 py-0.5 ml-2">
+                {props.item.rawValue.shortName}
+              </span>
+            </Show>
+          </Select.ItemLabel>
+        </Select.Item>
+      )}
+      sectionComponent={(props) => (
+        <Select.Section class="px-4 py-2 text-sm text-slate-800">
+          {props.section.rawValue.name}
+        </Select.Section>
+      )}
+    >
+      <Select.Label />
+      <Select.Trigger
+        class="w-full px-4 py-2 rounded-md flex flex-row justify-between bg-slate-100"
+        aria-label="Duty"
+      >
+        <Select.Value<IDutyReview>>
+          {(state) => {
+            const selected = state.selectedOption();
+
+            return (
+              <span>
+                {selected.name}
+                <Show when={selected.shortName}>
+                  <span class="text-sm bg-slate-300 rounded-sm px-1 py-0.5 ml-2">
+                    {selected.shortName}
+                  </span>
+                </Show>
+              </span>
+            );
+          }}
+        </Select.Value>
+      </Select.Trigger>
+
+      <Select.Portal>
+        <Select.Content class="bg-white border shadow-lg rounded-md">
+          <Select.Listbox />
+        </Select.Content>
+      </Select.Portal>
+    </Select>
+  );
+}
+
+function DutySettings(props: { form: UseForm<IDraftEventForm> }) {
+  const [duty] = createResource<IDuty, string>(
+    () => props.form.form.dutyId,
+    async (id) => dutyQuery(id)
+  );
+
+  return (
+    <Suspense fallback={<span>Loading...</span>}>
+      <Show when={duty()} keyed>
+        {(duty) => (
+          <>
+            <div class="mt-4">
+              <img
+                src={duty.imageUrl}
+                alt={duty.name}
+                class="m-auto md:w-2/3"
+              />
+            </div>
+
+            <div class="mt-4">
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Itaque,
+              quae!
+            </div>
+          </>
+        )}
+      </Show>
+    </Suspense>
+  );
+}
+
+function DutyCard(props: {
+  form: UseForm<IDraftEventForm>;
+  duties: IDutyCategory[];
+}) {
   return (
     <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Duty</h2>
+      </div>
+      <div class="card-body">
+        <DutySelection form={props.form} duties={props.duties} />
+
+        <DutySettings form={props.form} />
+      </div>
+    </div>
+  );
+}
+
+function InfoCard(props: { form: UseForm<IDraftEventForm> }) {
+  return (
+    <div class="card mt-6">
       <div class="form-control">
         <label for="title" class="form-label">
           Title
@@ -271,6 +408,7 @@ function ScheduleCard(props: { form: UseForm<IDraftEventForm> }) {
 }
 
 export default function DraftEventForm(props: {
+  duties: IDutyCategory[];
   class?: string;
   event?: IEvent;
 }) {
@@ -299,6 +437,8 @@ export default function DraftEventForm(props: {
 
   return (
     <form method="post" class={props.class}>
+      <DutyCard form={form} duties={props.duties} />
+
       <InfoCard form={form} />
 
       <SlotCard form={form} />

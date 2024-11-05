@@ -1,20 +1,29 @@
 import { cache, createAsync, redirect, useSearchParams } from "@solidjs/router";
 import { Show } from "solid-js";
 import CraftEventForm from "~/components/draft-event-form";
-import { draftEventQuery, IEvent } from "~/utils/api";
+import {
+  draftEventQuery,
+  dutiesQuery,
+  IDutyCategory,
+  IEvent,
+} from "~/utils/api";
 import { isLogin } from "~/utils/fetch";
 
-const createEvent = cache(async (id?: string): Promise<{ event?: IEvent }> => {
-  "use server";
-  if (!isLogin()) throw redirect("/");
+const createEvent = cache(
+  async (id?: string): Promise<{ event?: IEvent; duties: IDutyCategory[] }> => {
+    "use server";
+    if (!isLogin()) throw redirect("/");
 
-  if (id) {
-    const event = await draftEventQuery(id);
-    return { event };
-  }
+    const duties = await dutiesQuery();
+    if (id) {
+      const event = await draftEventQuery(id);
+      return { event, duties };
+    }
 
-  return {};
-}, "create_event");
+    return { duties };
+  },
+  "create_event"
+);
 
 export default function Page() {
   const [query] = useSearchParams();
@@ -33,7 +42,13 @@ export default function Page() {
       </Show>
 
       <Show when={data()} keyed>
-        {(data) => <CraftEventForm class="mt-6" event={data.event} />}
+        {(data) => (
+          <CraftEventForm
+            class="mt-6"
+            event={data.event}
+            duties={data.duties}
+          />
+        )}
       </Show>
     </div>
   );

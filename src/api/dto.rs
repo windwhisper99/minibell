@@ -22,6 +22,83 @@ impl From<domain::member::Member> for MemberDto {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DutyCategoryWithDutiesReviewDto {
+    pub id: String,
+    pub name: String,
+    pub duties: Vec<DutyReviewDto>,
+}
+
+impl From<domain::duty::DutyCategoryWithDutiesReview> for DutyCategoryWithDutiesReviewDto {
+    fn from(category: domain::duty::DutyCategoryWithDutiesReview) -> Self {
+        Self {
+            id: category.id,
+            name: category.name,
+            duties: category
+                .duties
+                .into_iter()
+                .map(DutyReviewDto::from)
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PhaseDto {
+    pub name: String,
+    pub progression: f64,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DutyReviewDto {
+    pub id: String,
+    pub name: String,
+    pub short_name: String,
+}
+
+impl From<domain::duty::DutyReview> for DutyReviewDto {
+    fn from(review: domain::duty::DutyReview) -> Self {
+        Self {
+            id: review.id,
+            name: review.name,
+            short_name: review.short_name,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DutyDto {
+    pub id: String,
+    pub name: String,
+    pub short_name: String,
+    pub image_url: String,
+
+    pub phases: Vec<PhaseDto>,
+}
+
+impl From<domain::duty::Duty> for DutyDto {
+    fn from(duty: domain::duty::Duty) -> Self {
+        Self {
+            id: duty.id,
+            name: duty.name,
+            short_name: duty.short_name,
+            image_url: duty.image_url,
+            phases: duty
+                .phases
+                .into_iter()
+                .map(|p| PhaseDto {
+                    name: p.name,
+                    progression: p.progression,
+                })
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DraftEventSlotDto {
     pub jobs: Vec<String>,
 }

@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod duty;
 pub mod event;
 pub mod member;
 

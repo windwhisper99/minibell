@@ -5,7 +5,6 @@ mod domain;
 mod infra;
 mod migration;
 mod usecase;
-// mod web;
 
 #[derive(Parser)]
 #[command(version)]
