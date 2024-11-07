@@ -4,3 +4,6 @@
 /assets
 
 .env
+
+# sst
+.sst

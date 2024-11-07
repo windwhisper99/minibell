@@ -1,3 +1,14 @@
+[workspace]
+members = ["crates/core", "crates/demo"]
+
+[profile.release]
+debug = 0
+incremental = false
+panic = "abort"
+opt-level = 3       # 0-3
+strip = 'symbols'   # strip symbols from binary
+lto = true          # enable link time optimization
+
 [package]
 name = "minibell"
 version = "0.1.0"
