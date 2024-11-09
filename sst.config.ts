@@ -9,6 +9,18 @@ export default $config({
     };
   },
   async run() {
+    sst.Linkable.wrap(aws.secretsmanager.Secret, (secret) => ({
+      properties: {
+        secretName: secret.name,
+      },
+      include: [
+        sst.aws.permission({
+          actions: ["secretsmanager:GetSecretValue"],
+          resources: [secret.arn],
+        }),
+      ],
+    }));
+
     const table = new sst.aws.Dynamo("Primary", {
       fields: {
         PK: "string",
@@ -31,21 +43,27 @@ export default $config({
       },
     });
 
+    const secretConfig = new aws.secretsmanager.Secret(
+      `${$app.name}-${$app.stage}-Config`
+    );
+
     const api = new sst.aws.Function("Api", {
       handler: "bootstrap",
-      bundle: "target/lambda/demo",
+      bundle: "target/lambda/api-lambda",
       architecture: "arm64",
       runtime: "provided.al2023",
       url: true,
-      link: [table],
+      dev: false,
+      link: [table, secretConfig],
       environment: {
-        PrimaryTable: table.name,
+        CONFIG_KEY: secretConfig.name,
       },
     });
 
     return {
       api: api.url,
       table: table.name,
+      secretConfig: secretConfig.name,
     };
   },
 });

@@ -15,5 +15,9 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "minibell-liri-Config": {
+      "secretName": string
+      "type": "aws.secretsmanager/secret.Secret"
+    }
   }
 }

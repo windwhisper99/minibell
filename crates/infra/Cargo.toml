@@ -1,0 +1,24 @@
+[package]
+name = "infra"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = "0.1.83"
+aws-config = "1.5.10"
+aws-sdk-secretsmanager = "1.53.0"
+base64 = "0.22.1"
+chrono = "0.4.38"
+dotenv = "0.15.0"
+hmac = "0.12.1"
+minibell = { path = "../core" }
+reqwest = { version = "0.12.9", default-features = false, features = [
+    "json",
+    "rustls-tls",
+] }
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+serde_with = "3.11.0"
+sha2 = "0.10.8"
+shaku = "0.6.2"
+url-escape = "0.1.1"

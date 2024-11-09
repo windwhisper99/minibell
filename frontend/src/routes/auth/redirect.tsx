@@ -6,7 +6,7 @@ export async function GET(event: APIEvent) {
   const code = new URL(event.request.url).searchParams.get("code");
 
   const result = await post<{ token: string }>(
-    { path: "/api/auth" },
+    { path: "/auth" },
     { code, redirectUri: "http://localhost:3000/auth/redirect" }
   );
 

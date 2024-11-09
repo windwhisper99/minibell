@@ -1,0 +1,29 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "api-local"
+path = "bin/local.rs"
+
+[[bin]]
+name = "api-lambda"
+path = "bin/lambda.rs"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+aws-config = "1.5.10"
+aws-sdk-secretsmanager = "1.53.0"
+axum = "0.7.7"
+minibell = { path = "../core" }
+infra = { path = "../infra" }
+dotenv = "0.15.0"
+lambda_http = "0.13.0"
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+tokio = { version = "1.41.0", features = ["full"] }
+tracing-subscriber = "0.3.18"
+shaku = "0.6.2"

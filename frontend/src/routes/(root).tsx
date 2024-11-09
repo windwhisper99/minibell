@@ -1,14 +1,9 @@
-import {
-  AccessorWithLatest,
-  cache,
-  createAsync,
-  RouteSectionProps,
-} from "@solidjs/router";
+import { createAsync, query, RouteSectionProps } from "@solidjs/router";
 import { Show } from "solid-js";
 import { get } from "~/utils/fetch";
 
 interface AuthInformation {
-  discordOauthUrl: string;
+  authUrl: string;
   member?: {
     id: number;
     name: string;
@@ -16,10 +11,10 @@ interface AuthInformation {
   };
 }
 
-const getAuthInformation = cache(async () => {
+const getAuthInformation = query(async () => {
   "use server";
   return get<AuthInformation>({
-    path: "/api/auth",
+    path: "/auth",
     query: { redirect_uri: "http://localhost:3000/auth/redirect" },
   });
 }, "auth_information");
@@ -32,7 +27,7 @@ function AuthStatus(pros: { auth: AuthInformation }) {
       fallback={
         <a
           class="font-medium flex flex-row gap-x-2 items-center bg-transparent text-slate-8 hover:text-slate-8/80"
-          href={pros.auth.discordOauthUrl}
+          href={pros.auth.authUrl}
         >
           Sign In
           <i class="i-logos-discord-icon w-6 h-6 inline-block"></i>

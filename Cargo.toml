@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/core", "crates/demo"]
+members = ["crates/api", "crates/core", "crates/demo", "crates/infra"]
 
 [profile.release]
 debug = 0
@@ -10,7 +10,7 @@ strip = 'symbols'   # strip symbols from binary
 lto = true          # enable link time optimization
 
 [package]
-name = "minibell"
+name = "minibelllegavy"
 version = "0.1.0"
 edition = "2021"
 
