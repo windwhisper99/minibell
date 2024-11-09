@@ -1,5 +1,7 @@
 #[derive(Debug, Clone)]
 pub enum Error {
+    ItemNotFound,
+
     InvalidToken,
 
     Forbidden,

@@ -7,11 +7,21 @@ use super::{Member, MemberId, MemberSession};
 
 #[async_trait]
 pub trait MemberRepository: Interface {
+    /// Insert member and session
     async fn insert_member_and_session(
         &self,
         member: &Member,
         session: &MemberSession,
     ) -> Result<(), Error>;
+
+    /// Get member by given id
+    async fn get_member(&self, member_id: MemberId) -> Result<Member, Error>;
+    /// Get member session by given id
+    async fn get_member_session(&self, session_id: &str) -> Result<MemberSession, Error>;
+}
+
+pub trait DemoResponsity: Interface {
+    fn demo(&self) -> Result<(), Error>;
 }
 
 #[async_trait]

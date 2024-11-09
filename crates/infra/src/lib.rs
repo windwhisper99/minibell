@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
 use aws_config::{BehaviorVersion, SdkConfig};
-use minibell::{member, Error};
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
-use shaku::{module, Component};
+use shaku::module;
 
 mod discord;
+mod dynamodb;
 mod session_hmac;
 
 #[derive(Debug, Clone)]
@@ -18,28 +17,13 @@ pub(crate) struct Parameters {
     discord_token: String,
 
     session_secret: String,
+
+    primary_table: String,
 }
 
 #[derive(Debug, Clone)]
 pub enum InfraError {
     DependencyError(String),
-}
-
-#[derive(Debug, Component)]
-#[shaku(interface = member::MemberRepository)]
-struct MemberRepoImpl;
-
-#[async_trait]
-impl member::MemberRepository for MemberRepoImpl {
-    async fn insert_member_and_session(
-        &self,
-        member: &member::Member,
-        session: &member::MemberSession,
-    ) -> Result<(), Error> {
-        println!("Insert member and session: {:?}", member);
-        println!("Insert member and session: {:?}", session);
-        Ok(())
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -52,7 +36,8 @@ module! {
         components = [
             discord::DiscordClientImpl,
             session_hmac::SessionHmac,
-            MemberRepoImpl,
+
+            dynamodb::member::MemberRepoImpl,
         ],
         providers = [],
     }
@@ -74,6 +59,8 @@ fn get_env_dotenv() -> Parameters {
 
     let session_secret = std::env::var("SESSION_SECRET").expect("SESSION_SECRET must be set");
 
+    let primary_table = std::env::var("PRIMARY_TABLE").expect("PRIMARY_TABLE must be set");
+
     Parameters {
         discord_client_id,
         discord_client_secret,
@@ -81,6 +68,8 @@ fn get_env_dotenv() -> Parameters {
         discord_token,
 
         session_secret,
+
+        primary_table,
     }
 }
 
@@ -107,6 +96,8 @@ async fn get_secret_manager(config: &SdkConfig, key: &str) -> Parameters {
     let secret = response.secret_string.expect("Secret not found");
     let secret = serde_json::from_str::<Secret>(&secret).expect("Failed to parse secret");
 
+    let primary_table = std::env::var("PRIMARY_TABLE").expect("PRIMARY_TABLE must be set");
+
     Parameters {
         discord_client_id: secret.discord_client_id,
         discord_client_secret: secret.discord_client_secret,
@@ -114,6 +105,8 @@ async fn get_secret_manager(config: &SdkConfig, key: &str) -> Parameters {
         discord_token: secret.discord_token,
 
         session_secret: secret.session_secret,
+
+        primary_table,
     }
 }
 
@@ -126,6 +119,8 @@ pub async fn bootstrap(config: BootstrapConfig) -> Result<InfraModule, InfraErro
     };
 
     let reqwest = Arc::new(reqwest::Client::new());
+    let dynamodb = Arc::new(dynamodb::DynamoClient::new(&sdkconfig, &parameters));
+
     let infra = InfraModule::builder()
         .with_component_parameters::<discord::DiscordClientImpl>(
             discord::DiscordClientImplParameters {
@@ -140,6 +135,11 @@ pub async fn bootstrap(config: BootstrapConfig) -> Result<InfraModule, InfraErro
         .with_component_parameters::<session_hmac::SessionHmac>(
             session_hmac::SessionHmacParameters {
                 secret: parameters.session_secret,
+            },
+        )
+        .with_component_parameters::<dynamodb::member::MemberRepoImpl>(
+            dynamodb::member::MemberRepoImplParameters {
+                db: dynamodb.clone(),
             },
         )
         .build();

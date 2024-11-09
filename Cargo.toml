@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/api", "crates/core", "crates/demo", "crates/infra"]
+members = ["crates/api", "crates/core", "crates/infra"]
 
 [profile.release]
 debug = 0

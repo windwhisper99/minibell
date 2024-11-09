@@ -10,15 +10,21 @@ pub struct SessionHmac {
     secret: String,
 }
 
-impl member::MemberSessionSigner for SessionHmac {
-    fn sign(&self, session_id: &str) -> Result<String, Error> {
+impl SessionHmac {
+    fn sign_signature(&self, session_id: &str) -> Result<String, Error> {
         type HmacSha256 = hmac::Hmac<Sha256>;
 
         let mut mac = HmacSha256::new_from_slice(self.secret.as_bytes())
             .map_err(|_| Error::internal("Sign signature failed, secret is invalid."))?;
         mac.update(session_id.as_bytes());
 
-        let signature = BASE64_URL_SAFE_NO_PAD.encode(mac.finalize().into_bytes());
+        Ok(BASE64_URL_SAFE_NO_PAD.encode(mac.finalize().into_bytes()))
+    }
+}
+
+impl member::MemberSessionSigner for SessionHmac {
+    fn sign(&self, session_id: &str) -> Result<String, Error> {
+        let signature = self.sign_signature(session_id)?;
         Ok(format!("{}.{}", session_id, signature))
     }
 
@@ -31,7 +37,7 @@ impl member::MemberSessionSigner for SessionHmac {
         let session_id = parts[0];
         let signature = parts[1];
 
-        self.sign(session_id).and_then(|com_signature| {
+        self.sign_signature(session_id).and_then(|com_signature| {
             if com_signature == signature {
                 Ok(session_id.to_string())
             } else {

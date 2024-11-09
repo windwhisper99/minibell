@@ -21,7 +21,7 @@ export default $config({
       ],
     }));
 
-    const table = new sst.aws.Dynamo("Primary", {
+    const primaryTable = new sst.aws.Dynamo("Primary", {
       fields: {
         PK: "string",
         SK: "string",
@@ -54,15 +54,16 @@ export default $config({
       runtime: "provided.al2023",
       url: true,
       dev: false,
-      link: [table, secretConfig],
+      link: [primaryTable, secretConfig],
       environment: {
         CONFIG_KEY: secretConfig.name,
+        PRIMARY_TABLE: primaryTable.name,
       },
     });
 
     return {
       api: api.url,
-      table: table.name,
+      primaryTable: primaryTable.name,
       secretConfig: secretConfig.name,
     };
   },

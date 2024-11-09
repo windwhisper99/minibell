@@ -2,6 +2,7 @@ use async_trait::async_trait;
 
 use crate::{member::MemberId, AccessType, Error};
 
+pub mod authorization;
 pub mod get_auth_info;
 pub mod sign_in;
 
