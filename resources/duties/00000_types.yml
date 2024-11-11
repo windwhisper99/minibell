@@ -1,0 +1,29 @@
+categories:
+- id: dungeon
+  name: Dungeons
+  sort: 0
+
+- id: trail
+  name: Trials
+  sort: 1
+
+- id: raid
+  name: Raids
+  sort: 2
+
+- id: alliance
+  name: Alliance Raids
+  sort: 3
+
+- id: extreme
+  name: Extreme Trials
+  sort: 4
+  
+- id: savage
+  name: Savage Raids
+  sort: 5
+
+- id: ultimate
+  name: Ultimate Raids
+  has_children: true
+  sort: 6

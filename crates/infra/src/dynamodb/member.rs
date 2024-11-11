@@ -1,7 +1,6 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
-use aws_sdk_dynamodb::types::{PutRequest, WriteRequest};
 use chrono::{DateTime, Utc};
 use minibell::{
     member::{self, MemberId},
@@ -150,37 +149,12 @@ impl member::MemberRepository for MemberRepoImpl {
         member: &member::Member,
         session: &member::MemberSession,
     ) -> Result<(), Error> {
-        let mut batch = HashMap::new();
-        batch.insert(
-            self.db.primary_table.clone(),
-            vec![
-                WriteRequest::builder()
-                    .put_request(
-                        PutRequest::builder()
-                            .set_item(Some(MemberModel::from(member).to_item()?))
-                            .build()
-                            .map_err(|e| Error::internal(e.to_string()))?,
-                    )
-                    .build(),
-                WriteRequest::builder()
-                    .put_request(
-                        PutRequest::builder()
-                            .set_item(Some(MemberSessionModel::from(session).to_item()?))
-                            .build()
-                            .map_err(|e| Error::internal(e.to_string()))?,
-                    )
-                    .build(),
-            ],
-        );
         self.db
-            .client
-            .batch_write_item()
-            .set_request_items(Some(batch))
+            .batch_insert_items()
+            .add_item(MemberModel::from(member))?
+            .add_item(MemberSessionModel::from(session))?
             .send()
             .await
-            .map_err(|e| Error::internal(e.to_string()))?;
-
-        Ok(())
     }
 
     async fn get_member(&self, member_id: MemberId) -> Result<member::Member, Error> {

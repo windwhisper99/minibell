@@ -1,0 +1,157 @@
+duties:
+# UCOB
+- id: 1a863f1ea3b
+  category: ultimate
+  name: The Unending Coil of Bahamut
+  short_name: UCoB
+  image: https://lds-img.finalfantasyxiv.com/itemicon/1a/1aa609c136b7632b4fb51293c24580f7bb50203a.png
+  patch: 4.11   
+  sort: 0
+
+  phrases:
+  - name: Twintania
+    progression: 0
+  - name: Nael deus Darnus
+    progression: 1
+  - name: Quickmarch
+    progression: 2
+  - name: Blackfire
+    progression: 2.1
+  - name: Fellruin
+    progression: 2.2
+  - name: Heavensfall
+    progression: 2.3
+  - name: Tenstrike
+    progression: 2.4
+  - name: Grand octet
+    progression: 2.5
+  - name: Adds
+    progression: 3
+  - name: Golden Bahamut
+    progression: 4
+  - name: Enrage
+    progression: 5
+
+# UWU
+- id: e6c2c586ba6
+  category: ultimate
+  name: The Weapon's Refrain
+  short_name: UWU
+  image: https://lds-img.finalfantasyxiv.com/itemicon/06/06b4b4da4b5eacee722a5f930d4d23fa880268b1.png
+  patch: 4.31
+  sort: 1
+
+  phrases:
+  - name: Garuda
+    progression: 0
+  - name: Ifrit
+    progression: 1
+  - name: Titan
+    progression: 2
+  - name: Transition
+    progression: 2.5
+  - name: Predation
+    progression: 3
+  - name: Annihilation
+    progression: 4
+  - name: Suppression
+    progression: 5
+  - name: Aetheric Boom
+    progression: 5.1
+  - name: Primal Roulette
+    progression: 5.2
+  - name: Enrage
+    progression: 6
+  
+# TEA
+- id: b56710190e9
+  category: ultimate
+  name: The Epic of Alexander
+  short_name: TEA
+  image: https://lds-img.finalfantasyxiv.com/itemicon/df/df109b51274e8555932056cd985fa4229cb37505.png
+  patch: 5.11
+  sort: 2
+
+  phrases:
+  - name: Living Liquid
+    progression: 0
+  - name: Limit cut
+    progression: 0.1
+  - name: Brute Justice & Cruise Chaser
+    progression: 1
+  - name: "Alexander Prime: Inception"
+    progression: 2
+  - name: "Alexander Prime: Wormhole"
+    progression: 2.1
+  - name: Perfect Alexander
+    progression: 3
+  - name: Enrage
+    progression: 4
+
+# DSR
+- id: ba184b63c2d
+  category: ultimate
+  name: "Dragonsong's Reprise"
+  short_name: DSR
+  image: "https://lds-img.finalfantasyxiv.com/itemicon/31/31986c17621c516f86a08027610bf89d4db2abbc.png"
+  patch: 6.11
+  sort: 3
+
+  phrases:
+  - name: Vault Knights
+    progression: 0
+  - name: Strength of the Ward
+    progression: 1
+  - name: Sanctity of the Ward
+    progression: 1.1
+  - name: Meteors
+    progression: 1.2
+  - name: Nidhogg
+    progression: 2
+  - name: Eyes
+    progression: 3
+  - name: Intermission
+    progression: 3.5
+  - name: Wrath of the Heavens
+    progression: 4
+  - name: Death of the Heavens
+    progression: 4.5
+  - name: Fresh
+    progression: 5
+  - name: Wroth Flames
+    progression: 5.1
+  - name: Dragon-King Thordan
+    progression: 6
+  - name: Enrage
+    progression: 7
+
+# TOP
+- id: dccacd176f4
+  category: ultimate
+  name: The Omega Protocol
+  short_name: TOP
+  image: https://lds-img.finalfantasyxiv.com/itemicon/07/073014b7f15f053665cb42ab750eb62498f5443b.png
+  patch: 6.31
+  sort: 4
+
+  phrases:
+  - name: Omega
+    progression: 0
+  - name: Party Synergy
+    progression: 1
+  - name: Hello World
+    progression: 2
+  - name: Monitors
+    progression: 3
+  - name: Blue Screen
+    progression: 4
+  - name: Delta 
+    progression: 5
+  - name: Sigma
+    progression: 5.1
+  - name: Omega
+    progression: 5.2
+  - name: Alpha Omega
+    progression: 6
+  - name: Enrage
+    progression: 7

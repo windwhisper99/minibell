@@ -2,9 +2,17 @@ use async_trait::async_trait;
 
 use crate::{member::MemberId, AccessType, Error};
 
+// Member
 pub mod authorization;
 pub mod get_auth_info;
 pub mod sign_in;
+
+// Duty
+pub mod get_duties;
+pub mod get_duty;
+pub mod get_duty_categories;
+pub mod insert_duties;
+pub mod insert_duty_categories;
 
 #[async_trait]
 pub trait UseCase: Send {

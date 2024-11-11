@@ -1,4 +1,5 @@
 pub mod access_type;
+pub mod duty;
 pub mod errors;
 pub mod member;
 

@@ -114,6 +114,185 @@ async fn sign_in(
     Json(Response { token })
 }
 
+mod duty {
+    use std::sync::Arc;
+
+    use axum::{
+        extract::{Path, Query},
+        response::IntoResponse,
+        Extension, Json,
+    };
+    use infra::InfraModule;
+    use minibell::{
+        duty,
+        usecases::{self, UseCase},
+        AccessType,
+    };
+    use serde::{Deserialize, Serialize};
+    use shaku::HasComponent;
+
+    #[derive(Debug, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct DutyCategory {
+        id: String,
+        name: String,
+        has_children: bool,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        parent: Option<String>,
+        sort: i32,
+    }
+
+    impl From<duty::DutyCategory> for DutyCategory {
+        fn from(category: duty::DutyCategory) -> Self {
+            Self {
+                id: category.id,
+                name: category.name,
+                has_children: category.has_children,
+                parent: category.parent,
+                sort: category.sort,
+            }
+        }
+    }
+
+    #[derive(Debug, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Duty {
+        id: String,
+        category: String,
+        name: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        description: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        short_name: Option<String>,
+        patch: String,
+        image: String,
+        sort: i32,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        phrases: Option<Vec<DutyPhrase>>,
+    }
+
+    #[derive(Debug, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct DutyPhrase {
+        name: String,
+        progression: f64,
+    }
+
+    impl From<duty::Duty> for Duty {
+        fn from(duty: duty::Duty) -> Self {
+            Self {
+                id: duty.id,
+                category: duty.category,
+                name: duty.name,
+                description: duty.description,
+                short_name: duty.short_name,
+                patch: duty.patch.to_string(),
+                image: duty.image,
+                sort: duty.sort,
+                phrases: None,
+            }
+        }
+    }
+
+    impl From<(duty::Duty, Vec<duty::DutyPhrase>)> for Duty {
+        fn from((duty, phrases): (duty::Duty, Vec<duty::DutyPhrase>)) -> Self {
+            Self {
+                phrases: Some(
+                    phrases
+                        .into_iter()
+                        .map(|phrase| DutyPhrase {
+                            name: phrase.name,
+                            progression: phrase.progression,
+                        })
+                        .collect::<Vec<_>>(),
+                ),
+                ..duty.into()
+            }
+        }
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct GetDutiesQuery {
+        category: String,
+    }
+
+    pub async fn get_duties(
+        Extension(infra): Extension<Arc<InfraModule>>,
+        Query(query): Query<GetDutiesQuery>,
+    ) -> impl IntoResponse {
+        use usecases::get_duties::*;
+
+        let get_duties = GetDuties {
+            duty_repo: infra.as_ref().resolve_ref(),
+        };
+        let duties = get_duties
+            .execute(
+                &AccessType::Guest,
+                Input {
+                    category: query.category,
+                },
+            )
+            .await
+            .expect("Failed to get duties");
+
+        Json(
+            duties
+                .into_iter()
+                .map(|duty| Duty::from(duty))
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct GetCategoriesQuery {
+        parent: Option<String>,
+    }
+
+    pub async fn get_categories(
+        Query(query): Query<GetCategoriesQuery>,
+        Extension(infra): Extension<Arc<InfraModule>>,
+    ) -> impl IntoResponse {
+        use usecases::get_duty_categories::*;
+
+        let get_categories = GetDutyCategories {
+            duty_repo: infra.as_ref().resolve_ref(),
+        };
+        let categories = get_categories
+            .execute(
+                &AccessType::Guest,
+                Input {
+                    parent: query.parent,
+                },
+            )
+            .await
+            .expect("Failed to get categories");
+
+        Json(
+            categories
+                .into_iter()
+                .map(|category| DutyCategory::from(category))
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    pub async fn get_duty(
+        Extension(infra): Extension<Arc<InfraModule>>,
+        Path(id): Path<String>,
+    ) -> impl IntoResponse {
+        use usecases::get_duty::*;
+
+        let get_duty = GetDuty {
+            duty_repo: infra.as_ref().resolve_ref(),
+        };
+        let (duty, phrases) = get_duty
+            .execute(&AccessType::Guest, &id)
+            .await
+            .expect("Failed to get duty");
+
+        Json(Duty::from((duty, phrases)))
+    }
+}
+
 #[derive(Debug)]
 struct AccessTypeHeader(AccessType);
 #[async_trait]
@@ -170,5 +349,8 @@ pub async fn app(config: infra::BootstrapConfig) -> Router {
         .route("/", get(root))
         .route("/auth", get(get_auth_info))
         .route("/auth", post(sign_in))
+        .route("/duty_categories", get(duty::get_categories))
+        .route("/duties", get(duty::get_duties))
+        .route("/duties/:duty_id", get(duty::get_duty))
         .layer(Extension(infra))
 }

@@ -11,6 +11,7 @@ aws-sdk-secretsmanager = "1.53.0"
 base64 = "0.22.1"
 chrono = "0.4.38"
 dotenv = "0.15.0"
+futures = "0.3.31"
 hmac = "0.12.1"
 minibell = { path = "../core" }
 reqwest = { version = "0.12.9", default-features = false, features = [

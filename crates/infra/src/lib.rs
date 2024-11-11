@@ -38,6 +38,7 @@ module! {
             session_hmac::SessionHmac,
 
             dynamodb::member::MemberRepoImpl,
+            dynamodb::duty::DutyRepoImpl,
         ],
         providers = [],
     }
@@ -139,6 +140,11 @@ pub async fn bootstrap(config: BootstrapConfig) -> Result<InfraModule, InfraErro
         )
         .with_component_parameters::<dynamodb::member::MemberRepoImpl>(
             dynamodb::member::MemberRepoImplParameters {
+                db: dynamodb.clone(),
+            },
+        )
+        .with_component_parameters::<dynamodb::duty::DutyRepoImpl>(
+            dynamodb::duty::DutyRepoImplParameters {
                 db: dynamodb.clone(),
             },
         )

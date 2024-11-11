@@ -1,0 +1,77 @@
+- id: tank
+  name: Tank
+  sub_roles:
+  # Tank
+  - id: tank
+    name: Tank
+    jobs:
+    - id: pld
+      name: Paladin
+    - id: war
+      name: Warrior
+    - id: drk
+      name: Dark Knight
+    - id: gnb
+      name: Gunbreaker
+
+- id: healer
+  name: Healer
+  sub_roles:
+  # Pure healer
+  - id: pure_healer
+    name: Pure Healer
+    jobs:
+    - id: whm
+      name: White Mage
+    - id: ast
+      name: Astrologian
+  # Shield healer
+  - id: shield_healer
+    name: Shield Healer
+    jobs:
+    - id: sch
+      name: Scholar
+    - id: sge
+      name: Sage
+
+- id: dps
+  name: DPS
+  sub_roles:
+  # Melee
+  - id: melee
+    name: Melee
+    jobs:
+    - id: mnk
+      name: Monk
+    - id: drg
+      name: Dragoon
+    - id: nin
+      name: Ninja
+    - id: sam
+      name: Samurai
+    - id: rpr
+      name: Reaper
+    - id: vpr
+      name: Viper
+  # Ranged
+  - id: ranged
+    name: Ranged
+    jobs:
+    - id: brd
+      name: Bard
+    - id: mch
+      name: Machinist
+    - id: dnc
+      name: Dancer
+  # Caster
+  - id: caster
+    name: Caster
+    jobs:
+    - id: blm
+      name: Black Mage
+    - id: smn
+      name: Summoner
+    - id: rdm
+      name: Red Mage
+    - id: pct
+      name: Pictomancer
