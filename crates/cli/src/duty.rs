@@ -17,7 +17,6 @@ struct Manifest {
 struct CategoryManifest {
     id: String,
     name: String,
-    has_children: Option<bool>,
     parent: Option<String>,
     sort: i32,
 }
@@ -27,7 +26,6 @@ impl Into<duty::DutyCategory> for CategoryManifest {
         duty::DutyCategory {
             id: self.id.to_string(),
             name: self.name.to_string(),
-            has_children: self.has_children.unwrap_or(false),
             parent: self.parent.clone(),
             sort: self.sort,
         }

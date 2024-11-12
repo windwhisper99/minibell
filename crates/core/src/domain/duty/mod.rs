@@ -6,7 +6,6 @@ pub use repo::*;
 pub struct DutyCategory {
     pub id: String,
     pub name: String,
-    pub has_children: bool,
     pub parent: Option<String>,
     pub sort: i32,
 }

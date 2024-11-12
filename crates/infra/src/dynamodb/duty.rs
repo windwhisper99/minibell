@@ -14,7 +14,6 @@ use super::{DynamoClient, PrimaryModel};
 pub struct DutyCategoryModel {
     id: String,
     name: String,
-    has_children: bool,
     parent: Option<String>,
     sort: i32,
 }
@@ -24,7 +23,6 @@ impl From<&DutyCategory> for DutyCategoryModel {
         Self {
             id: value.id.clone(),
             name: value.name.clone(),
-            has_children: value.has_children,
             parent: value.parent.clone(),
             sort: value.sort,
         }
@@ -36,7 +34,6 @@ impl Into<DutyCategory> for DutyCategoryModel {
         DutyCategory {
             id: self.id,
             name: self.name,
-            has_children: self.has_children,
             parent: self.parent,
             sort: self.sort,
         }
@@ -179,6 +176,15 @@ pub struct DutyRepoImpl {
     db: Arc<DynamoClient>,
 }
 
+impl DutyRepoImpl {
+    async fn get_category(&self, category: &str) -> Result<DutyCategory, Error> {
+        self.db
+            .get_item::<DutyCategoryModel>("DUTY_CATEGORY", &format!("DUTY_CATEGORY#{}", category))
+            .await
+            .map(|m| m.into())
+    }
+}
+
 #[async_trait]
 impl DutyRepository for DutyRepoImpl {
     /// Insert a category
@@ -228,6 +234,20 @@ impl DutyRepository for DutyRepoImpl {
             .query_items::<DutyModel>(Some("GSI1"), &format!("DUTY#{}", category), "DUTY")
             .await
             .map(|items| items.into_iter().map(Into::into).collect())
+    }
+
+    /// List all categories and duties
+    /// Return the parent category, all sub categories and all duties
+    async fn list_categories_and_duties(
+        &self,
+        parent: &str,
+    ) -> Result<(DutyCategory, Vec<DutyCategory>, Vec<Duty>), Error> {
+        let query_parent = self.get_category(&parent);
+        let query_categories = self.list_categories(Some(parent));
+        let query_duties = self.list_duties(parent);
+
+        futures::try_join!(query_parent, query_categories, query_duties)
+            .map(|(parent, categories, duties)| (parent, categories, duties))
     }
 
     /// Get a duty will pharse

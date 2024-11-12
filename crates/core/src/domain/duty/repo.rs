@@ -19,6 +19,13 @@ pub trait DutyRepository: Interface {
     /// List all duties given category
     async fn list_duties(&self, category: &str) -> Result<Vec<Duty>, Error>;
 
+    /// List all categories and duties
+    /// Return the parent category, all sub categories and all duties
+    async fn list_categories_and_duties(
+        &self,
+        parent: &str,
+    ) -> Result<(DutyCategory, Vec<DutyCategory>, Vec<Duty>), Error>;
+
     /// Get a duty will pharse
     async fn get_duty(&self, duty_id: &str) -> Result<(Duty, Vec<DutyPhrase>), Error>;
 }

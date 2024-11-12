@@ -10,7 +10,6 @@ pub mod sign_in;
 // Duty
 pub mod get_duties;
 pub mod get_duty;
-pub mod get_duty_categories;
 pub mod insert_duties;
 pub mod insert_duty_categories;
 
