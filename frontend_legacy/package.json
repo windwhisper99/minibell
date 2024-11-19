@@ -1,0 +1,30 @@
+{
+  "name": "example-bare",
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start"
+  },
+  "dependencies": {
+    "@ark-ui/solid": "^4.5.0",
+    "@floating-ui/dom": "^1.6.12",
+    "@kobalte/core": "^0.13.7",
+    "@modular-forms/solid": "^0.24.1",
+    "@solid-primitives/presence": "^0.0.6",
+    "@solidjs/router": "^0.15.1",
+    "@solidjs/start": "^1.0.10",
+    "classnames": "^2.5.1",
+    "solid-js": "^1.9.3",
+    "solid-motionone": "^1.0.2",
+    "vinxi": "^0.4.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@unocss/postcss": "^0.64.0",
+    "@unocss/reset": "^0.64.0",
+    "unocss": "^0.64.0"
+  }
+}

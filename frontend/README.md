@@ -1,15 +1,17 @@
-# SolidStart
+# sv
 
-Everything you need to build a Solid project, powered by [`solid-start`](https://start.solidjs.com);
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
 ## Creating a project
 
+If you're seeing this, you've probably already done this step. Congrats!
+
 ```bash
 # create a new project in the current directory
-npm init solid@latest
+npx sv create
 
 # create a new project in my-app
-npm init solid@latest my-app
+npx sv create my-app
 ```
 
 ## Developing
@@ -25,8 +27,12 @@ npm run dev -- --open
 
 ## Building
 
-Solid apps are built with _presets_, which optimise your project for deployment to different environments.
+To create a production version of your app:
 
-By default, `npm run build` will generate a Node app that you can run with `npm start`. To use a different preset, add it to the `devDependencies` in `package.json` and specify in your `app.config.js`.
+```bash
+npm run build
+```
 
-## This project was created with the [Solid CLI](https://solid-cli.netlify.app)
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

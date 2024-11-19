@@ -1,29 +1,25 @@
+node_modules
 
-dist
-.solid
+# Output
 .output
 .vercel
-.netlify
-.vinxi
-app.config.timestamp_*.js
+/.svelte-kit
+/build
 
-# Environment
-.env
-.env*.local
-
-# dependencies
-/node_modules
-
-# IDEs and editors
-/.idea
-.project
-.classpath
-*.launch
-.settings/
-
-# Temp
-gitignore
-
-# System Files
+# OS
 .DS_Store
 Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+## Panda
+styled-system
+styled-system-studio
