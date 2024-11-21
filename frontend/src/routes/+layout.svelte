@@ -56,7 +56,7 @@
           })}
           href={data.auth.authUrl}
         >
-          <span> Sign Up </span>
+          <span> Sign In </span>
           <Icon icon="logos:discord-icon" class={css({ w: "6", h: "6" })} />
         </a>
       {/if}

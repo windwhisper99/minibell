@@ -10,6 +10,12 @@ export default defineConfig({
   // Files to exclude
   exclude: [],
 
+  conditions: {
+    extend: {
+      groupSelected: "[aria-selected='true'] & ",
+    },
+  },
+
   // Useful for theme customization
   theme: {
     extend: {},
