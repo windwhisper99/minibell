@@ -13,6 +13,7 @@ export default defineConfig({
   conditions: {
     extend: {
       groupSelected: "[aria-selected='true'] & ",
+      notFirst: "&:not(:first-child)",
     },
   },
 

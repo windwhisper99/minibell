@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{
-    duty::{Duty, DutyCategory, DutyRepository},
+    duty::{CategoriesAndDuties, Duty, DutyCategory, DutyRepository},
     Error,
 };
 
@@ -19,7 +19,7 @@ pub struct Input {
 
 #[derive(Debug, Clone)]
 pub struct Response {
-    pub category: Option<DutyCategory>,
+    pub breadcrumbs: Vec<DutyCategory>,
     pub duties: Vec<Duty>,
     pub categories: Vec<DutyCategory>,
 }
@@ -27,17 +27,20 @@ pub struct Response {
 impl<'a> GetDuties<'a> {
     async fn run(&self, input: Input) -> Result<Response, Error> {
         if let Some(category) = input.category {
-            let (parent, categories, duties) =
-                self.duty_repo.list_categories_and_duties(&category).await?;
+            let CategoriesAndDuties {
+                breadcrumbs,
+                categories,
+                duties,
+            } = self.duty_repo.list_categories_and_duties(&category).await?;
             Ok(Response {
-                category: Some(parent),
+                breadcrumbs,
                 categories,
                 duties,
             })
         } else {
             let categories = self.duty_repo.list_categories(None).await?;
             Ok(Response {
-                category: None,
+                breadcrumbs: vec![],
                 categories,
                 duties: vec![],
             })

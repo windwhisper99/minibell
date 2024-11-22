@@ -3,7 +3,7 @@ import type { RequestEvent } from "@sveltejs/kit";
 export interface FetchOptions {
   path: string;
   excludeToken?: boolean;
-  query?: Record<string, string>;
+  query?: Record<string, string | null>;
 }
 
 export function get<T>(event: RequestEvent, options: FetchOptions) {
@@ -24,7 +24,9 @@ function fetchApi<T>(
   const url = new URL(options.path, "http://localhost:8080");
   if (options.query) {
     for (const key in options.query) {
-      url.searchParams.append(key, options.query[key]);
+      const value = options.query[key];
+      if (value === null) continue;
+      url.searchParams.append(key, value);
     }
   }
 

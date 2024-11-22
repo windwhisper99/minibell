@@ -17,3 +17,15 @@ export function createTransformation<T>(config: CreateTransformationProps<T>) {
     },
   };
 }
+
+export function idArena() {
+  let idCounter = 0;
+  return {
+    next() {
+      return idCounter++;
+    },
+    remove(id: number) {
+      idCounter = Math.max(idCounter - 1, id);
+    },
+  };
+}

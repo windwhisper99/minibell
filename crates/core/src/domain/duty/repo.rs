@@ -5,6 +5,22 @@ use crate::Error;
 
 use super::{Duty, DutyCategory, DutyPhrase};
 
+/// Categories and duties result
+/// Contains breadcrumbs, categories and duties
+#[derive(Debug)]
+pub struct CategoriesAndDuties {
+    pub breadcrumbs: Vec<DutyCategory>,
+    pub categories: Vec<DutyCategory>,
+    pub duties: Vec<Duty>,
+}
+
+#[derive(Debug)]
+pub struct DutyDetail {
+    pub breadcrumbs: Vec<DutyCategory>,
+    pub duty: Duty,
+    pub phrases: Vec<DutyPhrase>,
+}
+
 #[async_trait]
 pub trait DutyRepository: Interface {
     /// Insert a category
@@ -21,11 +37,8 @@ pub trait DutyRepository: Interface {
 
     /// List all categories and duties
     /// Return the parent category, all sub categories and all duties
-    async fn list_categories_and_duties(
-        &self,
-        parent: &str,
-    ) -> Result<(DutyCategory, Vec<DutyCategory>, Vec<Duty>), Error>;
+    async fn list_categories_and_duties(&self, parent: &str) -> Result<CategoriesAndDuties, Error>;
 
-    /// Get a duty will pharse
-    async fn get_duty(&self, duty_id: &str) -> Result<(Duty, Vec<DutyPhrase>), Error>;
+    /// Get a duty will pharse and breadcrumbs categories
+    async fn get_duty(&self, duty_id: &str) -> Result<DutyDetail, Error>;
 }

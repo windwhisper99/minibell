@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use minibell::{
-    duty::{Duty, DutyCategory, DutyPhrase, DutyRepository},
+    duty::{CategoriesAndDuties, Duty, DutyCategory, DutyDetail, DutyPhrase, DutyRepository},
     Error,
 };
 use serde::{Deserialize, Serialize};
@@ -183,6 +183,18 @@ impl DutyRepoImpl {
             .await
             .map(|m| m.into())
     }
+
+    async fn get_breadcrumbs(&self, category: DutyCategory) -> Result<Vec<DutyCategory>, Error> {
+        let mut breadcrumbs = vec![category.clone()];
+        let mut current = category;
+        while let Some(parent) = current.parent {
+            let category = self.get_category(&parent).await?;
+            breadcrumbs.push(category.clone());
+            current = category;
+        }
+
+        Ok(breadcrumbs.iter().rev().cloned().collect())
+    }
 }
 
 #[async_trait]
@@ -238,20 +250,25 @@ impl DutyRepository for DutyRepoImpl {
 
     /// List all categories and duties
     /// Return the parent category, all sub categories and all duties
-    async fn list_categories_and_duties(
-        &self,
-        parent: &str,
-    ) -> Result<(DutyCategory, Vec<DutyCategory>, Vec<Duty>), Error> {
+    async fn list_categories_and_duties(&self, parent: &str) -> Result<CategoriesAndDuties, Error> {
         let query_parent = self.get_category(&parent);
         let query_categories = self.list_categories(Some(parent));
         let query_duties = self.list_duties(parent);
 
-        futures::try_join!(query_parent, query_categories, query_duties)
-            .map(|(parent, categories, duties)| (parent, categories, duties))
+        let (parent, categories, duties) =
+            futures::try_join!(query_parent, query_categories, query_duties)?;
+
+        // Fetch breadcrumbs
+        let breadcrumbs = self.get_breadcrumbs(parent).await?;
+        Ok(CategoriesAndDuties {
+            breadcrumbs,
+            categories,
+            duties,
+        })
     }
 
     /// Get a duty will pharse
-    async fn get_duty(&self, duty_id: &str) -> Result<(Duty, Vec<DutyPhrase>), Error> {
+    async fn get_duty(&self, duty_id: &str) -> Result<DutyDetail, Error> {
         let get_duty_sk = format!("DUTY#{}", duty_id);
         let get_duty = self.db.get_item::<DutyModel>("DUTY", &get_duty_sk);
         let query_phrases_sk = format!("DUTY#{}", duty_id);
@@ -259,8 +276,16 @@ impl DutyRepository for DutyRepoImpl {
             self.db
                 .query_items::<DutyPhraseModel>(None, "DUTY_PHRASE", &query_phrases_sk);
 
-        futures::try_join!(get_duty, query_phrases)
-            .map(|(duty, phrases)| (duty.into(), phrases.into_iter().map(Into::into).collect()))
+        let (duty, phrases) = futures::try_join!(get_duty, query_phrases)?;
+
+        let parent = self.get_category(&duty.category).await?;
+        let breadcrumbs = self.get_breadcrumbs(parent).await?;
+
+        Ok(DutyDetail {
+            duty: duty.into(),
+            phrases: phrases.into_iter().map(Into::into).collect(),
+            breadcrumbs,
+        })
     }
 }
 

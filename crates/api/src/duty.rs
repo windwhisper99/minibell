@@ -102,7 +102,6 @@ pub async fn get_duties(
     let get_duties = GetDuties {
         duty_repo: infra.as_ref().resolve_ref(),
     };
-    let is_root = query.category.is_none();
     let response = get_duties
         .execute(
             &AccessType::Guest,
@@ -116,9 +115,7 @@ pub async fn get_duties(
     #[derive(Debug, Serialize)]
     #[serde(rename_all = "camelCase")]
     struct Response {
-        is_root: bool,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        category: Option<DutyCategoryDto>,
+        breadcrumbs: Vec<DutyCategoryDto>,
         #[serde(skip_serializing_if = "Vec::is_empty")]
         categories: Vec<DutyCategoryDto>,
         #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -126,8 +123,7 @@ pub async fn get_duties(
     }
 
     Json(Response {
-        is_root,
-        category: response.category.map(From::from),
+        breadcrumbs: response.breadcrumbs.into_iter().map(From::from).collect(),
         categories: response.categories.into_iter().map(From::from).collect(),
         duties: response.duties.into_iter().map(From::from).collect(),
     })
@@ -142,10 +138,20 @@ pub async fn get_duty(
     let get_duty = GetDuty {
         duty_repo: infra.as_ref().resolve_ref(),
     };
-    let (duty, phrases) = get_duty
+    let response = get_duty
         .execute(&AccessType::Guest, &id)
         .await
         .expect("Failed to get duty");
 
-    Json(DutyDto::from((duty, phrases)))
+    #[derive(Debug, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Response {
+        breadcrumbs: Vec<DutyCategoryDto>,
+        duty: DutyDto,
+    }
+
+    Json(Response {
+        breadcrumbs: response.breadcrumbs.into_iter().map(From::from).collect(),
+        duty: (response.duty, response.phrases).into(),
+    })
 }

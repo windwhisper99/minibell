@@ -2,8 +2,16 @@
   import * as Tabs from "$lib/components/tabs";
   import { css, cx } from "$lib/styled-system/css";
   import { container, flex, hstack, vstack } from "$lib/styled-system/patterns";
-  import Icon from "@iconify/svelte";
+  import BaseLineAssignment from "virtual:icons/ic/baseline-assignment";
+  import BaselineGroup from "virtual:icons/ic/baseline-group";
+  import BaselineSchedule from "virtual:icons/ic/baseline-schedule";
+  import BaselinePublish from "virtual:icons/ic/baseline-publish";
   import DutyForm from "./DutyForm.svelte";
+  import type { Component } from "svelte";
+  import type { SVGAttributes } from "svelte/elements";
+  import type { Snapshot } from "./$types.js";
+
+  let { data } = $props();
 
   const tabs = [
     { id: "duty", label: "Duty", unlocked: true },
@@ -12,26 +20,37 @@
     { id: "publish", label: "Publish", unlocked: true },
   ];
 
-  const title: Record<string, { title: string; icon: string }> = {
+  const title: Record<
+    string,
+    { title: string; icon: Component<SVGAttributes<SVGSVGElement>> }
+  > = {
     duty: {
       title: "Select duty for the event",
-      icon: "ic:baseline-assignment",
+      icon: BaseLineAssignment,
     },
     party: {
       title: "Set up party for the event",
-      icon: "ic:baseline-group",
+      icon: BaselineGroup,
     },
     schedule: {
       title: "When and where the event will be held?",
-      icon: "ic:baseline-schedule",
+      icon: BaselineSchedule,
     },
     publish: {
       title: "Publish the event",
-      icon: "ic:baseline-publish",
+      icon: BaselinePublish,
     },
   };
 
   let selectedTab = $state("duty");
+  export const snapshot: Snapshot<string> = {
+    capture: () => selectedTab,
+    restore: (value) => {
+      selectedTab = value;
+    },
+  };
+
+  let Icon = $derived(title[selectedTab].icon);
 </script>
 
 <div class={container({ mt: "6", maxW: "5xl" })}>
@@ -50,10 +69,7 @@
             color: "slate.500",
           })}
         >
-          <Icon
-            icon={title[selectedTab].icon}
-            class={css({ w: "6", h: "6" })}
-          />
+          <Icon class={css({ h: "6", w: "6" })} />
         </span>
         <span>
           {title[selectedTab].title}
@@ -106,9 +122,9 @@
       {/each}
     </Tabs.TabList>
 
-    <div class={css({ mt: "6" })}>
+    <div class={css({ mt: "12" })}>
       <Tabs.Panel id="duty">
-        <DutyForm />
+        <DutyForm {data} />
       </Tabs.Panel>
 
       <Tabs.Panel id="party">Party</Tabs.Panel>

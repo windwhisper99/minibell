@@ -26,6 +26,7 @@
 </script>
 
 <button
+  type="button"
   role="tab"
   id={`tab:${id}`}
   aria-selected={state.selected === id}

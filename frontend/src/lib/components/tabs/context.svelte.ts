@@ -7,7 +7,7 @@ import {
 const ctxKey = Symbol("tab-context");
 
 export type CreateTabsProps = CreateTransformationProps<string | null> & {
-  selectOnFocus?: () => boolean;
+  selectOnFocus: () => boolean;
 };
 
 function createTabs(props: CreateTabsProps) {
@@ -21,10 +21,7 @@ function createTabs(props: CreateTabsProps) {
     const dom = tabDoms[value];
     dom?.focus();
 
-    const selectOnFocus = props.selectOnFocus?.() ?? false;
-    console.log("selectOnFocus", selectOnFocus);
-
-    if (selectOnFocus) selected.value = value;
+    if (props.selectOnFocus()) selected.value = value;
   }
 
   function nextIndex(index: number) {
