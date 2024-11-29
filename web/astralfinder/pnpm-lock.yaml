@@ -8,7 +8,13 @@ importers:
 
   .:
     devDependencies:
+      '@iconify-json/bxs':
+        specifier: ^1.2.1
+        version: 1.2.1
       '@iconify-json/ic':
+        specifier: ^1.2.1
+        version: 1.2.1
+      '@iconify-json/iconamoon':
         specifier: ^1.2.1
         version: 1.2.1
       '@iconify-json/material-symbols':
@@ -216,8 +222,14 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@iconify-json/bxs@1.2.1':
+    resolution: {integrity: sha512-4bbLC0QAeyT1A9C22+SQYDjaddEvCVMobEvXfwkd2bPNGMuhhHLjfQiZRkLZG6Tjyip83z5n6XxNz9WpAb88wQ==}
+
   '@iconify-json/ic@1.2.1':
     resolution: {integrity: sha512-UjL/bjJP/T5EV881+hTzcfTKVo0KEUjhnMiJcLtPzNgPtU2KZZmRx8BSKKR61H4CN/5FTEbyawGyG0aEt3SwGQ==}
+
+  '@iconify-json/iconamoon@1.2.1':
+    resolution: {integrity: sha512-r9uuB2kfeLpi3T74fMnoQxfmKiALQ7mW0MoktDLBt70XtDmxGptf5boOmVdXgYQorNOVqEbjyvBEJRu+HR+g6w==}
 
   '@iconify-json/material-symbols@1.2.8':
     resolution: {integrity: sha512-X89QwN5eRMVHEfm5HWMYCZxkUqUPQM2TNv7D8rIPUn2jTzDmgjgiTMomn3DOXWyh1/geHPnTt1bTSFcUXlpGbw==}
@@ -945,7 +957,15 @@ snapshots:
   '@esbuild/win32-x64@0.21.5':
     optional: true
 
+  '@iconify-json/bxs@1.2.1':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/ic@1.2.1':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/iconamoon@1.2.1':
     dependencies:
       '@iconify/types': 2.0.0
 

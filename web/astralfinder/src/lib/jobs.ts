@@ -90,3 +90,33 @@ export const jobs: Record<string, Job> = {
     role: "caster",
   },
 };
+
+export interface Combination {
+  name: string;
+  description: string;
+  roles: Record<string, number>;
+}
+export const combination: Record<string, Combination> = {
+  standard_light: {
+    name: "Standard Light Party",
+    description: "Standard Light Party with 1 tank, 1 healer and 2 dps.",
+    roles: {
+      tank: 1,
+      healer: 1,
+      dps: 2,
+    },
+  },
+  standard_full: {
+    name: "Standard Full Party",
+    description:
+      "Standard Full Party with 2 tanks, 1 pure healer, 1 shield healer, 2 melees, 1 ranged and 1 caster.",
+    roles: {
+      tank: 2,
+      pure_healer: 2,
+      shield_healer: 4,
+      melee: 2,
+      ranged: 2,
+      caster: 2,
+    },
+  },
+};

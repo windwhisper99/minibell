@@ -4,8 +4,8 @@ import { createId } from "@paralleldrive/cuid2";
 export interface Party {
   id: string;
   name: string;
+  combination: string;
   created_at: Date;
-  description?: string;
   members: Record<string, Member>;
 }
 
@@ -80,12 +80,17 @@ export function createParty(name: string) {
     id: createId(),
     name,
     created_at: new Date(),
+    combination: "standard_light",
     members: {
       [firstMemberId]: {
         id: firstMemberId,
-        name: "First Member",
+        name: "Member 1",
         jobs: {},
       },
     },
   });
+}
+
+export function deleteParty(id: string) {
+  return db.table<Party>("party").delete(id);
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { updateParty, type Member } from "$lib/db.svelte";
   import { jobs } from "$lib/jobs";
+  import MaterialSymbolsDelete from "~icons/material-symbols/delete";
 
   type Props = {
     member: Member;
@@ -46,6 +47,13 @@
   function confidenceChange(job: string, confidence: number) {
     updateParty(partyId, (party) => {
       party.members[member.id].jobs[job] = confidence;
+      return party;
+    });
+  }
+
+  function deleteMemberClick() {
+    updateParty(partyId, (party) => {
+      delete party.members[member.id];
       return party;
     });
   }
@@ -134,5 +142,17 @@
         />
       </div>
     {/each}
+  </div>
+
+  <div class="col-span-2">
+    <div class="flex flex-row justify-end">
+      <button
+        class="px-4 py-2 text-sm font-medium rounded cursor-pointer hover:bg-slate-200/70 flex flex-row items-center gap-2"
+        onclick={deleteMemberClick}
+      >
+        <MaterialSymbolsDelete class="w-6 h-6 text-slate-600" />
+        Remove Member
+      </button>
+    </div>
   </div>
 </div>
