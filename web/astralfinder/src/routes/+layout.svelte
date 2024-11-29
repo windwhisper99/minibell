@@ -21,4 +21,4 @@
   </div>
 </header>
 
-<main class="container mx-auto mt-8 px-2">{@render children?.()}</main>
+<main class="container mx-auto my-8 px-2">{@render children?.()}</main>

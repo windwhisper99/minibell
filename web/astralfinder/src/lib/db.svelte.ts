@@ -1,16 +1,26 @@
 import { Dexie, liveQuery } from "dexie";
+import { createId } from "@paralleldrive/cuid2";
 
 export interface Party {
-  id: number;
+  id: string;
   name: string;
   created_at: Date;
   description?: string;
+  members: Record<string, Member>;
+}
+
+export interface Member {
+  id: string;
+  name: string;
+  jobs: Record<string, number>;
 }
 
 export const db = new Dexie("astralfinder");
 db.version(1).stores({
-  party: "++id,name,created_at",
+  party: "id,name,created_at,*members",
 });
+
+db.open();
 
 function query<T>(query: () => Promise<T>): { data: T | null } {
   let result = $state<T | null>(null);
@@ -29,10 +39,53 @@ function query<T>(query: () => Promise<T>): { data: T | null } {
   };
 }
 
-export function queryParty() {
+export function queryParties() {
   return query<Party[]>(() => db.table("party").toArray());
 }
 
+export function queryPartyById(id: string) {
+  return query<Party>(() => db.table("party").get(id));
+}
+
+export async function updateParty(
+  id: string,
+  updater: (party: Party) => Partial<Party>
+) {
+  const party = await db.table<Party>("party").get(id);
+  if (!party) return;
+
+  const newParty = updater(party);
+  await db.table<Party>("party").update(id, newParty);
+}
+
+export async function addMemberToParty(partyId: string, name: string) {
+  const memberId = createId();
+  await updateParty(partyId, (party) => ({
+    members: {
+      ...party.members,
+      [memberId]: {
+        id: memberId,
+        name,
+        jobs: {},
+      },
+    },
+  }));
+
+  return memberId;
+}
+
 export function createParty(name: string) {
-  return db.table("party").add({ name, created_at: new Date() });
+  const firstMemberId = createId();
+  return db.table<Party>("party").add({
+    id: createId(),
+    name,
+    created_at: new Date(),
+    members: {
+      [firstMemberId]: {
+        id: firstMemberId,
+        name: "First Member",
+        jobs: {},
+      },
+    },
+  });
 }

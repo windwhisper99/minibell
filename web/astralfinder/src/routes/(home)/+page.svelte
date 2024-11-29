@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { queryParty, type Party } from "$lib/db.svelte";
+  import { queryParties, type Party } from "$lib/db.svelte";
   import { dateTime } from "$lib/format";
   import UilCreateDashboard from "~icons/uil/create-dashboard";
   import MaterialSymbolsUpload from "~icons/material-symbols/upload";
 
-  const parties = queryParty();
+  const parties = queryParties();
 </script>
 
 {#snippet card(party: Party)}

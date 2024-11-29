@@ -1,14 +1,19 @@
 <script lang="ts">
   import * as Tabs from "$lib/components/tabs";
+  import { queryPartyById } from "$lib/db.svelte";
   import MemberList from "./MemberList.svelte";
   import TdesignMemberFilled from "~icons/tdesign/member-filled";
   import UisSchedule from "~icons/uis/schedule";
 
-  let selectedTab = "members";
+  let { data } = $props();
+
+  let selectedTab = $state("members");
   const tabs = [
     { id: "members", label: "Members", icon: TdesignMemberFilled },
     { id: "schedule", label: "Schedule", icon: UisSchedule },
   ];
+
+  const party = queryPartyById(data.partyId);
 </script>
 
 <Tabs.Root bind:value={selectedTab}>
@@ -28,7 +33,12 @@
 
   <div class="mt-6">
     <Tabs.Panel id="members">
-      <MemberList />
+      {#if party.data}
+        <MemberList
+          members={Object.values(party.data.members)}
+          partyId={data.partyId}
+        />
+      {/if}
     </Tabs.Panel>
     <Tabs.Panel id="schedule">Schedule</Tabs.Panel>
   </div>

@@ -14,7 +14,7 @@
 
   const tabs = setTabState({
     input: () => value,
-    update: (next: string) => {
+    update: (next) => {
       value = next ?? "";
     },
     selectOnFocus: () => selectOnFocus,

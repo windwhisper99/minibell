@@ -16,6 +16,7 @@
 		"@iconify-json/tdesign": "^1.2.6",
 		"@iconify-json/uil": "^1.2.1",
 		"@iconify-json/uis": "^1.2.1",
+		"@paralleldrive/cuid2": "^2.2.2",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
