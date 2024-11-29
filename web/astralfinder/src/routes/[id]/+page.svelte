@@ -81,7 +81,9 @@
         {/if}
       </Tabs.Panel>
       <Tabs.Panel id="schedule">
-        <Scheduling />
+        {#if party.data}
+          <Scheduling party={party.data} />
+        {/if}
       </Tabs.Panel>
     </div>
   </Tabs.Root>

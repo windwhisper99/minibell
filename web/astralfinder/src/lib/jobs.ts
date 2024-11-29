@@ -112,11 +112,11 @@ export const combination: Record<string, Combination> = {
       "Standard Full Party with 2 tanks, 1 pure healer, 1 shield healer, 2 melees, 1 ranged and 1 caster.",
     roles: {
       tank: 2,
-      pure_healer: 2,
-      shield_healer: 4,
+      pure_healer: 1,
+      shield_healer: 1,
       melee: 2,
-      ranged: 2,
-      caster: 2,
+      ranged: 1,
+      caster: 1,
     },
   },
 };

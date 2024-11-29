@@ -1,5 +1,6 @@
 import { Dexie, liveQuery } from "dexie";
 import { createId } from "@paralleldrive/cuid2";
+import { scheduling } from "./finder";
 
 export interface Party {
   id: string;
@@ -7,12 +8,19 @@ export interface Party {
   combination: string;
   created_at: Date;
   members: Record<string, Member>;
+
+  combinations?: Combination[];
 }
 
 export interface Member {
   id: string;
   name: string;
   jobs: Record<string, number>;
+}
+
+export interface Combination {
+  assigned: { id: string; job: string }[];
+  score: number;
 }
 
 export const db = new Dexie("astralfinder");
@@ -89,6 +97,14 @@ export function createParty(name: string) {
       },
     },
   });
+}
+
+export async function schedule(id: string) {
+  const party = await db.table<Party>("party").get(id);
+  if (!party) return;
+
+  const combinations = await scheduling(party);
+  await db.table<Party>("party").update(id, { combinations });
 }
 
 export function deleteParty(id: string) {

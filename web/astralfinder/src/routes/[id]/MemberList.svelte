@@ -3,17 +3,8 @@
   import IcBaselinePlus from "~icons/ic/baseline-plus";
   import * as Accordion from "$lib/components/accordion";
   import MemberForm from "./MemberForm.svelte";
-  import { jobs } from "$lib/jobs";
   import { addMemberToParty, type Member } from "$lib/db.svelte";
-
-  const roleColors: Record<string, string> = {
-    tank: "bg-blue-200",
-    pure_healer: "bg-green-200",
-    shield_healer: "bg-green-200",
-    melee: "bg-red-200",
-    ranged: "bg-red-200",
-    caster: "bg-red-200",
-  };
+  import JobBadge from "$lib/components/JobBadge.svelte";
 
   type Props = {
     partyId: string;
@@ -39,14 +30,7 @@
           <p class="text-xl font-medium text-left">{member.name}</p>
           <p class="mt-3 flex flex-row gap-1">
             {#each Object.keys(member.jobs) as job}
-              <span
-                class="uppercase px-2 py-1 text-xs font-semibold rounded-sm {roleColors[
-                  jobs[job].role
-                ]}"
-                role="status"
-              >
-                {job}
-              </span>
+              <JobBadge {job} />
             {/each}
           </p>
         </div>

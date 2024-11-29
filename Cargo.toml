@@ -1,5 +1,12 @@
 [workspace]
-members = ["crates/api", "crates/cli", "crates/core", "crates/infra"]
+members = [
+    "crates/api",
+    "crates/astralfinder",
+    "crates/astralfinder-wasm",
+    "crates/cli",
+    "crates/core",
+    "crates/infra",
+]
 
 [profile.release]
 debug = 0
