@@ -25,7 +25,7 @@ export interface Combination {
 
 export const db = new Dexie("astralfinder");
 db.version(1).stores({
-  party: "id,name,created_at,*members",
+  party: "id,name,created_at,*members,*combinations",
 });
 
 db.open();

@@ -45,6 +45,18 @@
   {#if parties.data}
     {#if parties.data.length === 0}
       <p class="text-slate-600 mt-6">Don't have any parties yet.</p>
+
+      <div
+        class="mt-12 text-sm text-orange-700 bg-orange-100/20 border border-orange-500 rounded px-4 py-3"
+      >
+        This application stores all data locally on your device using <a
+          href="https://en.wikipedia.org/wiki/Indexed_Database_API"
+          target="_blank"
+          class="font-medium hover:underline">IndexedDB</a
+        >. Your data will not be shared or stored on any server. Please note: if
+        you switch to a different browser or device, or clear your browser's
+        data, your saved information will be lost.
+      </div>
     {:else}
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {#each parties.data as party}
