@@ -144,7 +144,7 @@
     {/each}
   </div>
 
-  <div class="col-span-2">
+  <div class="md:col-span-2 mt-8 md:mt-0">
     <div class="flex flex-row justify-end">
       <button
         class="px-4 py-2 text-sm font-medium rounded cursor-pointer hover:bg-slate-200/70 flex flex-row items-center gap-2"

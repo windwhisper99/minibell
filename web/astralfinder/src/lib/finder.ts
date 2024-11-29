@@ -1,6 +1,6 @@
 import init, { resolve } from "astralfinder";
 import type { Combination, Party } from "./db.svelte";
-import { combination } from "./jobs";
+import { combination, jobs } from "./jobs";
 
 export async function scheduling(party: Party) {
   await init();

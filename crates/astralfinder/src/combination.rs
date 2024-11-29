@@ -28,24 +28,18 @@ impl Default for State {
 
 struct Resolver<'a> {
     roles: HashMap<Role, usize>,
+    nslots: usize,
     members: &'a Vec<Member>,
 
     result: Vec<Combination>,
 }
 
 impl<'a> Resolver<'a> {
-    fn new(members: &'a Vec<Member>) -> Self {
+    fn new(members: &'a Vec<Member>, roles: HashMap<Role, usize>) -> Self {
+        let nslots = roles.values().sum();
         Resolver {
-            roles: vec![
-                (Role::Tank, 2),
-                (Role::PureHealer, 1),
-                (Role::ShieldHealer, 1),
-                (Role::Melee, 2),
-                (Role::Caster, 1),
-                (Role::Ranged, 1),
-            ]
-            .into_iter()
-            .collect::<HashMap<_, _>>(),
+            roles,
+            nslots,
             members,
             result: Vec::new(),
         }
@@ -57,6 +51,10 @@ impl<'a> Backtrack for Resolver<'a> {
     type Candidate = Assignment;
 
     fn is_solution(&self, state: &State) -> bool {
+        if state.assignments.len() == self.nslots {
+            return true;
+        }
+
         state.assignments.len() >= self.members.len()
     }
 
@@ -87,8 +85,11 @@ impl<'a> Backtrack for Resolver<'a> {
         let mut assigned_jobs = HashSet::new();
 
         for assignment in state.assignments.iter() {
+            let Some(role) = self.roles.keys().find(|role| assignment.1.satifies(role)) else {
+                continue;
+            };
             assigned_roles
-                .entry(assignment.1.role())
+                .entry(role)
                 .and_modify(|count| *count += 1)
                 .or_insert(1);
             assigned_jobs.insert(assignment.1.clone());
@@ -114,16 +115,16 @@ impl<'a> Backtrack for Resolver<'a> {
         for job in member.jobs.iter() {
             let job = job.job.clone();
 
-            // Check if role is filled
-            if !available_roles.contains(&job.role()) {
-                continue;
-            }
-
             // Check if the job is already assigned
             if assigned_jobs.contains(&job) {
                 continue;
             }
-            candidates.push(Assignment(state.member_index, job));
+
+            // Check if job is fill available
+            let available = available_roles.iter().any(|role| job.satifies(role));
+            if available {
+                candidates.push(Assignment(state.member_index, job));
+            }
         }
 
         candidates
@@ -137,8 +138,11 @@ impl<'a> Backtrack for Resolver<'a> {
     }
 }
 
-pub fn resolve_combinations(members: &Vec<Member>) -> Vec<Combination> {
-    let mut resolver = Resolver::new(members);
+pub fn resolve_combinations(
+    members: &Vec<Member>,
+    roles: HashMap<Role, usize>,
+) -> Vec<Combination> {
+    let mut resolver = Resolver::new(members, roles);
     iterate_backtrack(&mut resolver);
 
     // Sort the result

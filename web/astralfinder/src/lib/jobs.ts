@@ -1,3 +1,5 @@
+import type { Combination } from "./db.svelte";
+
 export interface Job {
   name: string;
   role: string;
@@ -91,12 +93,12 @@ export const jobs: Record<string, Job> = {
   },
 };
 
-export interface Combination {
+export interface SlotCombination {
   name: string;
   description: string;
   roles: Record<string, number>;
 }
-export const combination: Record<string, Combination> = {
+export const combination: Record<string, SlotCombination> = {
   standard_light: {
     name: "Standard Light Party",
     description: "Standard Light Party with 1 tank, 1 healer and 2 dps.",
@@ -120,3 +122,57 @@ export const combination: Record<string, Combination> = {
     },
   },
 };
+
+const roleSorts = [
+  "tank",
+  "healer",
+  "pure_healer",
+  "shield_healer",
+  "dps",
+  "melee",
+  "ranged",
+  "caster",
+];
+
+const jobSorts = [
+  "pld",
+  "war",
+  "drk",
+  "gnb",
+  "whm",
+  "sch",
+  "ast",
+  "sge",
+  "mnk",
+  "drg",
+  "nin",
+  "sam",
+  "rpr",
+  "vpr",
+  "brd",
+  "mch",
+  "dnc",
+  "blm",
+  "smn",
+  "rdm",
+  "pct",
+];
+
+export function sortCombination(combination: Combination) {
+  // Sort by role
+  const newCombination: Combination = {
+    assigned: [...combination.assigned],
+    score: combination.score,
+  };
+  newCombination.assigned.sort((a, b) => {
+    const aRole = jobs[a.job].role;
+    const bRole = jobs[b.job].role;
+
+    return (
+      roleSorts.indexOf(aRole) - roleSorts.indexOf(bRole) ||
+      jobSorts.indexOf(a.job) - jobSorts.indexOf(b.job)
+    );
+  });
+
+  return newCombination;
+}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import JobBadge from "$lib/components/JobBadge.svelte";
   import { schedule, type Party } from "$lib/db.svelte";
-  import { combination } from "$lib/jobs";
+  import { sortCombination } from "$lib/jobs";
   import BxsRocket from "~icons/bxs/rocket";
 
   type Props = {
@@ -9,6 +9,11 @@
   };
 
   let { party }: Props = $props();
+
+  let combinations = $derived.by(() => {
+    if (!party.combinations) return;
+    return party.combinations.map((com) => sortCombination(com));
+  });
 
   async function startScheduling() {
     schedule(party.id);
@@ -25,9 +30,7 @@
   </button>
 </div>
 
-{#if party.combinations}
-  {@const combinations = party.combinations}
-
+{#if combinations}
   <div class="mt-4">
     There are {combinations.length} possible combinations.
   </div>

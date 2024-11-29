@@ -51,7 +51,7 @@
   <Tabs.Root bind:value={selectedTab}>
     <Tabs.TabList
       aria-label="Party Scheduling Tabs"
-      class="flex flex-row gap-2"
+      class="grid grid-cols-2 md:flex gap-2"
     >
       {#each tabs as tab (tab.id)}
         <Tabs.Tab

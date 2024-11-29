@@ -249,16 +249,16 @@ impl Job {
         }
     }
 
-    pub fn role(&self) -> Role {
-        match self {
-            Job::Pld | Job::War | Job::Gnb | Job::Drk => Role::Tank,
-            Job::Whm | Job::Ast => Role::PureHealer,
-            Job::Sch | Job::Sge => Role::ShieldHealer,
-            Job::Drg | Job::Mnk | Job::Nin | Job::Sam | Job::Rpr | Job::Vpr => Role::Melee,
-            Job::Brd | Job::Mch | Job::Dnc => Role::Ranged,
-            Job::Blm | Job::Smn | Job::Rdm | Job::Pct => Role::Caster,
-        }
-    }
+    // pub fn role(&self) -> Role {
+    //     match self {
+    //         Job::Pld | Job::War | Job::Gnb | Job::Drk => Role::Tank,
+    //         Job::Whm | Job::Ast => Role::PureHealer,
+    //         Job::Sch | Job::Sge => Role::ShieldHealer,
+    //         Job::Drg | Job::Mnk | Job::Nin | Job::Sam | Job::Rpr | Job::Vpr => Role::Melee,
+    //         Job::Brd | Job::Mch | Job::Dnc => Role::Ranged,
+    //         Job::Blm | Job::Smn | Job::Rdm | Job::Pct => Role::Caster,
+    //     }
+    // }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

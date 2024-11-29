@@ -43,7 +43,7 @@ impl TryInto<Member> for MemberInput {
 
 #[derive(Debug, Deserialize)]
 struct Input {
-    roles: HashMap<String, i32>,
+    roles: HashMap<String, usize>,
     members: Vec<MemberInput>,
 }
 
@@ -76,13 +76,13 @@ pub fn resolve_js(input: JsValue) -> JsValue {
         .collect::<Result<Vec<_>, _>>()
         .expect("Failed to convert members");
 
-    let mut roles: HashMap<Role, i32> = HashMap::new();
+    let mut roles: HashMap<Role, usize> = HashMap::new();
     for (role, count) in input.roles {
         let role = role.parse().expect("Invalid role");
         roles.insert(role, count);
     }
 
-    let combinations = combination::resolve_combinations(&members);
+    let combinations = combination::resolve_combinations(&members, roles);
     let result = combinations.into_iter().map(|combination| {
         let mut assigned = Vec::new();
         for (member_id, job) in combination.assigned {

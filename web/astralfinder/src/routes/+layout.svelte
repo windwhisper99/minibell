@@ -8,6 +8,11 @@
 
 <svelte:head>
   <title>Astral Finder</title>
+
+  <meta
+    name="description"
+    content="A tool for organize and schedule group contents for FF14."
+  />
 </svelte:head>
 
 <div class="min-h-screen flex flex-col justify-between">
