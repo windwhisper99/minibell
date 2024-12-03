@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { SvelteHTMLElements } from "svelte/elements";
   import { getAccordionState } from "./context.svelte";
+  import { hammer } from "../utils.svelte";
 
   type AccordionHeaderProps = {
     id: string;
@@ -57,13 +58,8 @@
           break;
       }
     }}
-    onpointerdown={(event) => {
-      rest.onpointerdown?.(event);
-      if (event.defaultPrevented) return;
-
-      if (event.button === 0) {
-        state.selectItem(id);
-      }
+    use:hammer={() => {
+      state.selectItem(id);
     }}
     onfocusin={(event) => {
       rest.onfocusin?.(event);

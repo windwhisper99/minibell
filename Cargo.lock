@@ -535,6 +535,7 @@ name = "astralfinder-wasm"
 version = "0.1.0"
 dependencies = [
  "astralfinder",
+ "chrono",
  "chrono-tz",
  "console_error_panic_hook",
  "serde",

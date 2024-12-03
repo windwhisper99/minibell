@@ -8,6 +8,19 @@ use crate::{
     data::{Job, Member, Role},
 };
 
+#[derive(Debug, Clone)]
+pub struct CombinationConfig {
+    pub roles: HashMap<Role, usize>,
+    pub nslots: usize,
+}
+
+impl CombinationConfig {
+    pub fn new(roles: HashMap<Role, usize>) -> Self {
+        let nslots = roles.values().sum();
+        CombinationConfig { roles, nslots }
+    }
+}
+
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
 struct Assignment(usize, Job);
 
@@ -27,21 +40,37 @@ impl Default for State {
 }
 
 struct Resolver<'a> {
-    roles: HashMap<Role, usize>,
-    nslots: usize,
+    combination: &'a CombinationConfig,
     members: &'a Vec<Member>,
 
-    result: Vec<Combination>,
+    member_weight: f32,
+    confidence_weight: f32,
+
+    min_members: Option<usize>,
+    highest_score: f32,
+    combinations: Vec<Combination>,
 }
 
 impl<'a> Resolver<'a> {
-    fn new(members: &'a Vec<Member>, roles: HashMap<Role, usize>) -> Self {
-        let nslots = roles.values().sum();
+    fn new(
+        members: &'a Vec<Member>,
+        combination: &'a CombinationConfig,
+
+        member_weight: f32,
+        confidence_weight: f32,
+
+        min_members: Option<usize>,
+    ) -> Self {
         Resolver {
-            roles,
-            nslots,
+            combination,
             members,
-            result: Vec::new(),
+
+            member_weight,
+            confidence_weight,
+
+            min_members,
+            highest_score: 0.0,
+            combinations: Vec::new(),
         }
     }
 }
@@ -51,11 +80,20 @@ impl<'a> Backtrack for Resolver<'a> {
     type Candidate = Assignment;
 
     fn is_solution(&self, state: &State) -> bool {
-        if state.assignments.len() == self.nslots {
+        if state.assignments.len() == self.combination.nslots {
             return true;
         }
 
-        state.assignments.len() >= self.members.len()
+        // Check no more members are available and minimum members are satisfied
+        if let Some(min_members) = self.min_members {
+            if state.assignments.len() >= self.members.len()
+                && state.assignments.len() >= min_members
+            {
+                return true;
+            }
+        }
+
+        false
     }
 
     fn advance(&self, state: &Self::State, candidate: Self::Candidate) -> Option<Self::State> {
@@ -85,7 +123,12 @@ impl<'a> Backtrack for Resolver<'a> {
         let mut assigned_jobs = HashSet::new();
 
         for assignment in state.assignments.iter() {
-            let Some(role) = self.roles.keys().find(|role| assignment.1.satifies(role)) else {
+            let Some(role) = self
+                .combination
+                .roles
+                .keys()
+                .find(|role| assignment.1.satifies(role))
+            else {
                 continue;
             };
             assigned_roles
@@ -97,7 +140,7 @@ impl<'a> Backtrack for Resolver<'a> {
 
         // Check if roles are filled
         let mut available_roles = HashSet::new();
-        for (role, count) in self.roles.iter() {
+        for (role, count) in self.combination.roles.iter() {
             if let Some(role_count) = assigned_roles.get(role) {
                 if role_count >= count {
                     continue;
@@ -131,25 +174,36 @@ impl<'a> Backtrack for Resolver<'a> {
     }
 
     fn process_solution(&mut self, state: &Self::State) {
-        self.result.push(Combination::from_assignment(
-            &state.assignments,
-            &self.members,
-        ));
+        let mut confidence_score = 0.0;
+        let mut assigned = Vec::new();
+        for Assignment(member_index, job) in &state.assignments {
+            let member = self.members.get(*member_index).unwrap();
+            confidence_score += member
+                .jobs
+                .iter()
+                .find(|j| j.job == *job)
+                .unwrap()
+                .confidence;
+            assigned.push((member.id.clone(), job.clone()));
+        }
+
+        // Percent of members assigned compared to total slots
+        let member_score = assigned.len() as f32 / self.combination.nslots as f32;
+        let confidence_score = confidence_score / assigned.len() as f32;
+
+        let combination = Combination {
+            score: member_score * self.member_weight + confidence_score * self.confidence_weight,
+            assigned,
+        };
+
+        // Replace if the score is higher
+        if combination.score > self.highest_score {
+            self.highest_score = combination.score;
+            self.combinations = vec![combination];
+        } else if combination.score == self.highest_score {
+            self.combinations.push(combination);
+        }
     }
-}
-
-pub fn resolve_combinations(
-    members: &Vec<Member>,
-    roles: HashMap<Role, usize>,
-) -> Vec<Combination> {
-    let mut resolver = Resolver::new(members, roles);
-    iterate_backtrack(&mut resolver);
-
-    // Sort the result
-    resolver
-        .result
-        .sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
-    resolver.result
 }
 
 #[derive(Clone)]
@@ -178,24 +232,21 @@ impl Ord for Combination {
     }
 }
 
-impl Combination {
-    fn from_assignment(assignments: &Vec<Assignment>, members: &Vec<Member>) -> Self {
-        let mut score = 0.0;
-        let mut assigned = Vec::new();
-        for Assignment(member_index, job) in assignments {
-            let member = members.get(*member_index).unwrap();
-            score += member
-                .jobs
-                .iter()
-                .find(|j| j.job == *job)
-                .unwrap()
-                .confidence;
-            assigned.push((member.id.clone(), job.clone()));
-        }
+pub fn resolve_combinations(
+    members: &Vec<Member>,
+    combination: &CombinationConfig,
+    member_weight: f32,
+    confidence_weight: f32,
+    min_members: Option<usize>,
+) -> (f32, Vec<Combination>) {
+    let mut resolver = Resolver::new(
+        members,
+        combination,
+        member_weight,
+        confidence_weight,
+        min_members,
+    );
+    iterate_backtrack(&mut resolver);
 
-        Combination {
-            score: score / assigned.len() as f32,
-            assigned,
-        }
-    }
+    (resolver.highest_score, resolver.combinations)
 }

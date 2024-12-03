@@ -7,7 +7,7 @@ import icons from "unplugin-icons/vite";
 export default defineConfig({
   server: {
     fs: {
-      allow: ["../../crates/astralfinder-wasm/out"],
+      allow: ["../../crates/astralfinder-wasm/pkg"],
     },
   },
   plugins: [

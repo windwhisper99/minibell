@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { SvelteHTMLElements } from "svelte/elements";
   import { getTabState as getTabState } from "./context.svelte";
+  import { hammer } from "../utils.svelte";
 
   type TabProps = SvelteHTMLElements["button"] & {
     id: string;
@@ -60,13 +61,8 @@
         break;
     }
   }}
-  onpointerdown={(event) => {
-    rest.onpointerdown?.(event);
-    if (event.defaultPrevented) return;
-
-    if (event.button === 0) {
-      state.selectTab(id);
-    }
+  use:hammer={() => {
+    state.selectTab(id);
   }}
   onfocusin={(event) => {
     rest.onfocusin?.(event);

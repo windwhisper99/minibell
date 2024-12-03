@@ -1,9 +1,6 @@
-use std::{
-    fmt::{Debug, Display},
-    str::FromStr,
-};
+use std::{fmt::Debug, str::FromStr};
 
-use chrono::{DateTime, Datelike, Duration, NaiveTime, TimeZone, Timelike, Utc, Weekday};
+use chrono::{Duration, NaiveTime, Timelike, Weekday};
 use chrono_tz::Tz;
 
 #[derive(Debug, Clone)]
@@ -24,8 +21,14 @@ impl TimeRange {
         (start, end)
     }
 
+    /// Get the duration of the time range
+    pub fn duration(&self) -> Duration {
+        let (start, end) = self.seconds_from_midnight();
+        Duration::seconds((end - start) as i64)
+    }
+
     /// Check if another time range is contained within this time range
-    pub fn contains(&self, other: &TimeRange) -> bool {
+    pub fn is_contain(&self, other: &TimeRange) -> bool {
         let (tr1_start, tr1_end) = self.seconds_from_midnight();
         let (tr2_start, tr2_end) = other.seconds_from_midnight();
 
@@ -44,8 +47,8 @@ impl TimeRange {
 
 #[derive(Debug, Clone)]
 pub struct Availability {
-    pub day_of_week: Weekday,
-    pub time_ranges: Vec<TimeRange>,
+    pub weekday: Weekday,
+    pub time_range: TimeRange,
 }
 
 #[derive(Debug, Clone)]
@@ -54,9 +57,11 @@ pub struct ReferJob {
     pub confidence: f32,
 }
 
+pub type MemberId = String;
+
 #[derive(Debug, Clone)]
 pub struct Member {
-    pub id: String,
+    pub id: MemberId,
     // pub name: String,
     pub timezone: Tz,
     pub availability: Vec<Availability>,
@@ -81,28 +86,28 @@ impl Member {
     //         .collect()
     // }
 
-    /// Check if the member is available at the given time slot
-    pub fn is_available(&self, time_slot: &TimeSlot) -> bool {
-        let start = self
-            .timezone
-            .from_utc_datetime(&time_slot.start.naive_utc());
-        let end = self.timezone.from_utc_datetime(&time_slot.end.naive_utc());
+    // /// Check if the member is available at the given time slot
+    // pub fn is_available(&self, time_slot: &TimeSlot) -> bool {
+    //     let start = self
+    //         .timezone
+    //         .from_utc_datetime(&time_slot.start.naive_utc());
+    //     let end = self.timezone.from_utc_datetime(&time_slot.end.naive_utc());
 
-        let time_slot_day = start.weekday();
-        // Apply the timezone to the time slot
-        let time_slot_time_range = TimeRange {
-            start: start.time(),
-            end: end.time(),
-        };
+    //     let time_slot_day = start.weekday();
+    //     // Apply the timezone to the time slot
+    //     let time_slot_time_range = TimeRange {
+    //         start: start.time(),
+    //         end: end.time(),
+    //     };
 
-        self.availability.iter().any(|availability| {
-            availability.day_of_week == time_slot_day
-                && availability
-                    .time_ranges
-                    .iter()
-                    .any(|time_range| time_range.contains(&time_slot_time_range))
-        })
-    }
+    //     self.availability.iter().any(|availability| {
+    //         availability.day_of_week == time_slot_day
+    //             && availability
+    //                 .time_ranges
+    //                 .iter()
+    //                 .any(|time_range| time_range.contains(&time_slot_time_range))
+    //     })
+    // }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -248,17 +253,6 @@ impl Job {
             },
         }
     }
-
-    // pub fn role(&self) -> Role {
-    //     match self {
-    //         Job::Pld | Job::War | Job::Gnb | Job::Drk => Role::Tank,
-    //         Job::Whm | Job::Ast => Role::PureHealer,
-    //         Job::Sch | Job::Sge => Role::ShieldHealer,
-    //         Job::Drg | Job::Mnk | Job::Nin | Job::Sam | Job::Rpr | Job::Vpr => Role::Melee,
-    //         Job::Brd | Job::Mch | Job::Dnc => Role::Ranged,
-    //         Job::Blm | Job::Smn | Job::Rdm | Job::Pct => Role::Caster,
-    //     }
-    // }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -290,109 +284,5 @@ impl FromStr for Role {
             &"dps" => Ok(Role::DPS),
             _ => Err(format!("Invalid role: {}", s)),
         }
-    }
-}
-
-#[derive(Clone)]
-pub struct TimeSlot {
-    pub start: DateTime<Utc>,
-    pub end: DateTime<Utc>,
-}
-
-impl Display for TimeSlot {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{} - {}",
-            self.start.format("%a %Y-%b-%d %H:%M"),
-            self.end.format("%a %Y-%b-%d %H:%M")
-        )
-    }
-}
-
-impl Debug for TimeSlot {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
-    }
-}
-
-impl TimeSlot {
-    pub fn gen_time_slots(
-        start: DateTime<Utc>,
-        end: DateTime<Utc>,
-        gap: Duration,
-        duration: Duration,
-    ) -> Vec<TimeSlot> {
-        // Normalize the start and end to :00 or :30
-        let start = start
-            .with_minute((start.minute() / 30) * 30)
-            .unwrap()
-            .with_second(0)
-            .unwrap();
-        let end = end
-            .with_minute((end.minute() / 30) * 30)
-            .unwrap()
-            .with_second(0)
-            .unwrap();
-
-        let mut time_slots = Vec::new();
-        let mut current = start;
-
-        while current < end {
-            time_slots.push(TimeSlot {
-                start: current,
-                end: current + duration,
-            });
-            current = current + gap;
-        }
-        time_slots
-    }
-
-    pub fn is_overlap(&self, other: &TimeSlot) -> bool {
-        self.start < other.end && self.end > other.start
-    }
-}
-
-#[derive(Debug)]
-pub struct Event {
-    pub time_slot: TimeSlot,
-    pub assignments: Vec<MemberAssignment>,
-}
-
-#[derive(Debug)]
-pub struct MemberAssignment {
-    pub member: u32,
-    pub job: Vec<Job>,
-    pub role: Role,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{TimeRange, TimeSlot};
-    use chrono::{Duration, TimeZone, Utc};
-
-    #[test]
-    fn test_time_range_contains() {
-        let a = TimeRange {
-            start: chrono::NaiveTime::from_hms_opt(17, 0, 0).unwrap(),
-            end: chrono::NaiveTime::from_hms_opt(10, 0, 0).unwrap(),
-        };
-        let b = TimeRange {
-            start: chrono::NaiveTime::from_hms_opt(17, 0, 0).unwrap(),
-            end: chrono::NaiveTime::from_hms_opt(19, 0, 0).unwrap(),
-        };
-
-        assert_eq!(a.contains(&b), true);
-    }
-
-    #[test]
-    fn test_gen_time_slots() {
-        let start = Utc.with_ymd_and_hms(2024, 11, 24, 0, 0, 0).unwrap();
-        let end = Utc.with_ymd_and_hms(2024, 11, 30, 0, 0, 0).unwrap();
-        let duration = Duration::minutes(120);
-        let gap = Duration::minutes(30);
-
-        let time_slots = TimeSlot::gen_time_slots(start, end, gap, duration);
-        println!("{:#?}", time_slots);
     }
 }

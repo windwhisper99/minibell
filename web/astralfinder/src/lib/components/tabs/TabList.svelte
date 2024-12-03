@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { SvelteHTMLElements } from "svelte/elements";
-  import { getTabState } from "./context.svelte";
   import type { Snippet } from "svelte";
 
   let {

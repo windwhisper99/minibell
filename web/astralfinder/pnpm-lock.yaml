@@ -56,12 +56,18 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.0.0-beta.4
         version: 4.0.0-beta.4(postcss@8.4.49)(svelte@5.2.10)(typescript@5.7.2)(vite@6.0.1(@types/node@22.10.1)(jiti@2.4.0)(lightningcss@1.28.2))
+      '@types/hammerjs':
+        specifier: ^2.0.46
+        version: 2.0.46
       astralfinder:
-        specifier: ../../crates/astralfinder-wasm/out
-        version: link:../../crates/astralfinder-wasm/out
+        specifier: ../../crates/astralfinder-wasm/pkg
+        version: link:../../crates/astralfinder-wasm/pkg
       dexie:
         specifier: ^4.0.10
         version: 4.0.10
+      hammerjs:
+        specifier: ^2.0.8
+        version: 2.0.8
       svelte:
         specifier: ^5.0.0
         version: 5.2.10
@@ -707,6 +713,9 @@ packages:
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
+  '@types/hammerjs@2.0.46':
+    resolution: {integrity: sha512-ynRvcq6wvqexJ9brDMS4BnBLzmr0e14d6ZJTEShTBWKymQiHwlAyGu0ZPEFI2Fh1U53F7tN9ufClWM5KvqkKOw==}
+
   '@types/node-forge@1.3.11':
     resolution: {integrity: sha512-FQx220y22OKNTqaByeBGqHWYz4cl94tpcxeFdvBo3wjG6XPBuZ0BNgNZRV5J5TFmmcsJ4IzsLkmGRiQbnYsBEQ==}
 
@@ -856,6 +865,10 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  hammerjs@2.0.8:
+    resolution: {integrity: sha512-tSQXBXS/MWQOn/RKckawJ61vvsDpCom87JgxiYdGwHdOa0ht0vzUWDlfioofFCRU0L+6NGDt6XzbgoJvZkMeRQ==}
+    engines: {node: '>=0.8.0'}
 
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
@@ -1775,6 +1788,8 @@ snapshots:
 
   '@types/estree@1.0.6': {}
 
+  '@types/hammerjs@2.0.46': {}
+
   '@types/node-forge@1.3.11':
     dependencies:
       '@types/node': 22.10.1
@@ -1929,6 +1944,8 @@ snapshots:
   globrex@0.1.2: {}
 
   graceful-fs@4.2.11: {}
+
+  hammerjs@2.0.8: {}
 
   hasown@2.0.2:
     dependencies:

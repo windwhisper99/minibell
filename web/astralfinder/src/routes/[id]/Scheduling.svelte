@@ -55,7 +55,7 @@
         <div class="border-t border-slate-100 px-4 py-2">
           <span class="font-medium"> Score: </span>
           <span class="text-lg font-bold">
-            {Math.round((com.score + Number.EPSILON) * 100) / 100}
+            {Math.round(com.score * 100) / 100}
           </span>
         </div>
       </div>

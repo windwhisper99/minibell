@@ -1,0 +1,75 @@
+[
+  {
+    "id": "l69k8xc70pe4w3pc2himru9o",
+    "name": "Liri",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "availability": {
+      "Mon": "7:00-17:00",
+      "Tue": "7:00-17:00",
+      "Wed": "7:00-17:00",
+      "Thu": "14:00-0:00",
+      "Fri": "14:00-0:00",
+      "Sat": "14:00-0:00",
+      "Sun": "14:00-0:00"
+    },
+    "jobs": { "pld": 1.0, "sge": 0.9, "whm": 0.8, "sam": 0.5 }
+  },
+  {
+    "id": "tm29rfy3tce1f91yviowcrpz",
+    "name": "Elizabeth",
+    "timezone": "America/New_York",
+    "availability": {
+      "Mon": "8:00-17:30,18:00-0:00",
+      "Tue": "8:00-17:30,18:00-0:00",
+      "Wed": "8:00-17:30,18:00-0:00",
+      "Thu": "8:00-17:30,18:00-0:00",
+      "Fri": "8:00-17:30,18:00-0:00",
+      "Sat": "8:00-17:30,18:00-0:00",
+      "Sun": "9:00-17:30,18:00-0:00"
+    },
+    "jobs": { "gnb": 1.0, "drk": 0.9, "war": 0.8, "pld": 0.6, "mch": 0.5 }
+  },
+  {
+    "id": "h0mpuyk9uaezr5fs8l67bino",
+    "name": "Raya",
+    "timezone": "America/Chicago",
+    "availability": {
+      "Mon": "19:00-0:00",
+      "Tue": "19:00-0:00",
+      "Wed": "19:00-0:00",
+      "Thu": "19:00-0:00",
+      "Fri": "19:00-0:00",
+      "Sat": "12:00-0:00",
+      "Sun": "21:00-0:00"
+    },
+    "jobs": { "smn": 1.0, "sch": 0.5 }
+  },
+  {
+    "id": "fk0i74kfr4ch10hzgp5idb4t",
+    "name": "Astrid",
+    "timezone": "America/Los_Angeles",
+    "availability": {
+      "Mon": "10:00-17:00",
+      "Tue": "10:00-17:00",
+      "Wed": "10:00-17:00",
+      "Thu": "10:00-17:00",
+      "Fri": "10:00-17:00",
+      "Sat": "10:00-14:00",
+      "Sun": "10:00-14:00"
+    },
+    "jobs": { "whm": 1.0 }
+  },
+  {
+    "id": "cqirzthhr75shkro4874wjmy",
+    "name": "Zahrel",
+    "timezone": "America/Puerto_Rico",
+    "availability": {
+      "Mon": "22:00-0:00",
+      "Wed": "22:00-0:00",
+      "Fri": "22:00-0:00",
+      "Sat": "10:00-14:00",
+      "Sun": "10:00-14:00"
+    },
+    "jobs": { "war": 1.0 }
+  }
+]
